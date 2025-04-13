@@ -1,4 +1,5 @@
 from django.db import models
+import random
 from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
@@ -9,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator
 from ..common.models import BaseModel
 from ..common.validators import phone_validator, validate_image_size
+from ..companies.models import Company
 
 
 class UserManager(BaseUserManager):
@@ -102,3 +104,23 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
 
     def __str__(self):
         return f"{self.email}"
+
+def generate_agent_id():
+    """function to generate agent_id"""
+    return random.randint(100000, 999999)
+
+class Agent(BaseModel):
+    """This is a class for the agent models"""
+
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
+    agent_id = models.IntegerField(generate_agent_id, max_digits=6, blank=False)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, blank=False)
+    commission = models.DecimalField(max_digits=10, decimal_places=5)
+    rating = models.DecimalField(max_digits=10, decimal_places=3)
+    status = models.CharField(max_length=20, default="active")
+
+    class Meta:
+        ordering = ["agent_id"]
+
+    def __str__(self):
+        return f"{self.agent_id}"
