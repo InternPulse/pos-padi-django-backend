@@ -61,9 +61,7 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, data):
         user = authenticate(email=data["email"], password=data["password"])
         if not user:
-            print(f"Authentication failed for email: {data['email']}")  # Debugging log
             raise serializers.ValidationError("Invalid email or password.")
         if not user.is_verified:
-            print(f"Email not verified for user: {data['email']}")  # Debugging log
             raise serializers.ValidationError("Email is not verified.")
         return user
