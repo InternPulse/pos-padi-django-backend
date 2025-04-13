@@ -31,3 +31,4 @@ class BaseModel(models.Model):
         if self.is_active:
             self.is_active = False
             self.save(update_fields=["is_active", "updated_at"] if self.pk else None)
+

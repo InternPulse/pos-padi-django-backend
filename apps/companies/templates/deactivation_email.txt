@@ -1,0 +1,5 @@
+Dear Agent,
+
+Your account with {{ company.name }} was deactivated on {{ date }}.
+
+Contact {{ support_email }} with questions.

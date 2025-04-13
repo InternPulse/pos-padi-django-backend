@@ -64,7 +64,8 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "drf_yasg",
     "dj_rest_auth",
-    "rest_framework.authtoken"
+    "rest_framework.authtoken",
+    "auditlog",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -216,3 +217,11 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = env("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
+
+
+# Django AuditLog
+# https://django-auditlog.readthedocs.io/en/latest/usage.html#settings
+AUDITLOG_INCLUDE_ALL_MODELS=True
+AUDITLOG_EXCLUDE_TRACKING_FIELDS = ("created_at", "modified_at")
+AUDITLOG_DISABLE_REMOTE_ADDR = True
+AUDITLOG_MASK_TRACKING_FIELDS = ("password",)
