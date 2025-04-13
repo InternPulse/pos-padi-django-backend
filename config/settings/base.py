@@ -152,6 +152,9 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -216,3 +219,10 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = env("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
+
+
+# Add custom authentication backends
+AUTHENTICATION_BACKENDS = [
+    'apps.users.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]

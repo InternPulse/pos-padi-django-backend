@@ -51,7 +51,10 @@ class RegistrationAPIView(APIView):
         # Return validation errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class LoginAPIView(APIView):
-    def post(self, request):
+    parser_classes = [MultiPartParser, JSONParser]
+    permission_classes = [AllowAny]
+    
+    def post(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data
@@ -91,4 +94,3 @@ class VerifyEmailAPIView(APIView):
             user.save()
             return Response({"message": "Email verified successfully."})
         return Response({"error": "Invalid verification link."}, status=status.HTTP_400_BAD_REQUEST)
-
