@@ -1,4 +1,4 @@
- # POS Padi Django Backend API
+# POS Padi Django Backend API
 
 ## Project Overview
 
@@ -49,13 +49,17 @@ Ensure the following tools are installed:
 2. **Set up a virtual environment:**
 
     **Windows:**
+
     ```bash
+
     python -m venv venv
     .\venv\Scripts\activate
     ```
 
     **macOS/Linux:**
+
     ```bash
+    
     python -m venv venv
     source venv/bin/activate
     ```
