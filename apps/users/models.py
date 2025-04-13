@@ -1,3 +1,4 @@
+# apps/users/models.py
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -12,11 +13,9 @@ from ..common.validators import phone_validator, validate_image_size
 
 
 class UserManager(BaseUserManager):
-
     def create_user(
         self, email, password, first_name, last_name, phone, nin, role, **extra_fields
     ):
-
         if not all([email, password, first_name, last_name, phone, nin, role]):
             raise ValueError("All fields are required.")
 
@@ -47,7 +46,6 @@ class UserManager(BaseUserManager):
     def create_superuser(
         self, email, password, first_name, last_name, phone, nin, role, **extra_fields
     ):
-
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
@@ -65,7 +63,6 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin, BaseModel):
-
     ROLE_CHOICES = [
         ("owner", "Owner"),
         ("customer", "Customer"),
@@ -102,3 +99,4 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
 
     def __str__(self):
         return f"{self.email}"
+
