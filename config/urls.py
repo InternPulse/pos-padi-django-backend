@@ -48,3 +48,8 @@ urlpatterns = [
     path("auth/", include(("config.auth_urls", "auth"), namespace="auth")),
     path("api/<str:version>/", include(("config.api_urls", "api"), namespace="api"))
 ] + drf_yasg_urls
+
+# Add the users app's URLs
+urlpatterns += [
+    path("users/", include("apps.users.urls")),
+]

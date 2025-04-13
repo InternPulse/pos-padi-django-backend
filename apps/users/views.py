@@ -29,7 +29,7 @@ class RegistrationAPIView(APIView):
             # Generate email verification token
             token = email_verification_token.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            verification_url = f"{request.scheme}://{request.get_host()}/verify/{uid}/{token}/"
+            verification_url = f"{request.scheme}://{request.get_host()}/api/v1/verify/{uid}/{token}/"
 
             try:
                 send_mail(
@@ -66,6 +66,7 @@ class LoginAPIView(APIView):
 
 
 class VerifyEmailAPIView(APIView):
+    permission_classes = [AllowAny]  # Allow unauthenticated access
 
     @swagger_auto_schema(
         responses={
@@ -77,7 +78,7 @@ class VerifyEmailAPIView(APIView):
             ),
         },
     )
-    def get(self, request, uidb64, token):
+    def get(self, request, uidb64, token, *args, **kwargs):
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
             user = User.objects.get(pk=uid)
@@ -86,6 +87,7 @@ class VerifyEmailAPIView(APIView):
 
         if user and email_verification_token.check_token(user, token):
             user.is_verified = True
+            user.is_active = True  # Activate the user after email verification
             user.save()
             return Response({"message": "Email verified successfully."})
         return Response({"error": "Invalid verification link."}, status=status.HTTP_400_BAD_REQUEST)
