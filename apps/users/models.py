@@ -28,7 +28,7 @@ class UserManager(BaseUserManager):
         try:
             validate_password(password)
         except ValidationError as e:
-            raise ValidationError(f"Invalid password: {e.messages}")
+            raise ValidationError(f"password: {e.messages}")
 
         user = self.model(
             email=self.normalize_email(email),
@@ -63,6 +63,18 @@ class UserManager(BaseUserManager):
         return user
 
 
+class UserRoles:
+    OWNER = "owner"
+    AGENT = "agent"
+    CUSTOMER = "customer"
+
+    CHOICES = [
+        (OWNER, "Owner"),
+        (AGENT, "Agent"),
+        (CUSTOMER, "Customer")
+    ]
+
+
 class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     ROLE_CHOICES = [
         ("owner", "Owner"),
@@ -78,7 +90,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     # national_id_front = models.ImageField(validators=[validate_image_size])
     # national_id_back = models.ImageField(validators=[validate_image_size])
     nin = models.CharField(max_length=11, validators=[MinLengthValidator(11)], blank=False)
-    role = models.CharField(max_length=10, blank=False, choices=ROLE_CHOICES)
+    role = models.CharField(max_length=10, blank=False, choices=UserRoles.CHOICES)
     is_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True, null=True)
     otp_expiration = models.DateTimeField(blank=True, null=True)
