@@ -8,6 +8,7 @@ from django.contrib.auth.models import (
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator
+from django.utils.timezone import now
 from ..common.models import BaseModel
 from ..common.validators import phone_validator, validate_image_size
 
@@ -74,11 +75,13 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     email = models.EmailField(unique=True, blank=False)
     phone = models.CharField(max_length=15, blank=False, validators=[phone_validator])
     photo = models.ImageField(validators=[validate_image_size])
-    national_id_front = models.ImageField(validators=[validate_image_size])
-    national_id_back = models.ImageField(validators=[validate_image_size])
+    # national_id_front = models.ImageField(validators=[validate_image_size])
+    # national_id_back = models.ImageField(validators=[validate_image_size])
     nin = models.CharField(max_length=11, validators=[MinLengthValidator(11)], blank=False)
     role = models.CharField(max_length=10, blank=False, choices=ROLE_CHOICES)
     is_verified = models.BooleanField(default=False)
+    otp = models.CharField(max_length=6, blank=True, null=True)
+    otp_expiration = models.DateTimeField(blank=True, null=True)
 
     objects = UserManager()
 
@@ -89,9 +92,6 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         "phone",
         "nin",
         "role",
-        "photo",
-        "national_id_front",
-        "national_id_back",
     ]
 
     class Meta:
@@ -99,4 +99,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
 
     def __str__(self):
         return f"{self.email}"
+
+    def is_otp_valid(self):
+        return self.otp and self.otp_expiration and self.otp_expiration > now()
 
