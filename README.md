@@ -15,6 +15,14 @@ PedMonie is a Django-based payment integration app that leverages the Django RES
 
 PedMonie ensures seamless payment handling with secure authentication and robust API endpoints for a smooth financial experience.
 
+
+Features Implemented
+
+    Financial Reporting: Profit and loss reports, daily reports, and net profit calculations with filtering by date range, terminal, and agent.
+    Transaction Management: CRUD operations for transactions (create, edit, delete) with audit logging, integrated with a Node.js transaction API.
+    Export Functionality: Reports exportable in PDF and Excel formats.
+
+    
 ## Live Link
 
 [API Live Demo](https://)
@@ -105,6 +113,20 @@ Ensure the following tools are installed:
 - Refer to the [API Documentation](https://documenter.getpostman.com/view/36548151/2sAYBPmZm1) for detailed instructions.
 
 ---
+
+
+### API Endpoints
+**Base URL**: `http://127.0.0.1:8000/api/v1/`
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/users/profit_loss_report/` | GET | Fetch profit and loss report (owners only). Supports `start_date`, `end_date`, `terminal`, `agent`, and `export` (pdf/excel) query params. |
+| `/users/daily_report/` | GET | Fetch daily report for a specific date. Supports `date`, `agent`, and `terminal` query params. |
+| `/users/net_profit/` | GET | Fetch net profit for a date range. Supports `start_date` and `end_date` query params. |
+| `/transactions/` | GET, POST | List or create transactions via Node.js API. |
+| `/transactions/<id>/` | PUT, DELETE | Update or delete a transaction via Node.js API, with audit logging. |
+
+
 
 ## API Endpoints
 
