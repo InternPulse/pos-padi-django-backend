@@ -1,39 +1,38 @@
 # apps/users/views.py
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
 from django.core.mail import send_mail, BadHeaderError
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes
-from rest_framework_simplejwt.tokens import RefreshToken
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-from rest_framework.permissions import AllowAny
-import random
 from django.utils.timezone import now
 from datetime import timedelta
-from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+import random
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 
 from .serializers import RegistrationSerializer, LoginSerializer
-from .tokens import email_verification_token
 from .models import User
 
 class RegistrationAPIView(APIView):
     parser_classes = [MultiPartParser, JSONParser]
     permission_classes = [AllowAny]
 
+    @swagger_auto_schema(
+        request_body=RegistrationSerializer,
+        responses={
+            201: "User registered successfully. Check your email for the OTP to verify your account.",
+            400: "Invalid data or bad request.",
+            500: "Email sending failed.",
+        },
+    )
     def post(self, request, *args, **kwargs):
-         # Optional: capture the version if you need it
-
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-
-            # Generate OTP for email verification
             otp = self.generate_otp(user)
-
             try:
                 send_mail(
                     subject="Verify Your Email",
@@ -50,7 +49,6 @@ class RegistrationAPIView(APIView):
                 return Response({"error": "Invalid header found."}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
                 return Response({"error": f"Email sending failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def generate_otp(self, user):
@@ -61,11 +59,17 @@ class RegistrationAPIView(APIView):
         return otp
 
 
-
 class LoginAPIView(APIView):
     parser_classes = [MultiPartParser, JSONParser]
     permission_classes = [AllowAny]
-    
+
+    @swagger_auto_schema(
+        request_body=LoginSerializer,
+        responses={
+            200: "Login successful. Returns access and refresh tokens.",
+            400: "Invalid credentials.",
+        },
+    )
     def post(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -79,11 +83,26 @@ class LoginAPIView(APIView):
             status=status.HTTP_200_OK,
         )
 
+
 class VerifyEmailAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "email": openapi.Schema(type=openapi.TYPE_STRING, description="User's email"),
+                "otp": openapi.Schema(type=openapi.TYPE_STRING, description="OTP sent to the user's email"),
+            },
+            required=["email", "otp"],
+        ),
+        responses={
+            200: "Email verified successfully.",
+            400: "Invalid or expired OTP.",
+            404: "User not found.",
+        },
+    )
     def post(self, request, *args, **kwargs):
-        # Safely handle the 'version' argument
         otp = request.data.get("otp")
         email = request.data.get("email")
 
@@ -105,17 +124,23 @@ class VerifyEmailAPIView(APIView):
 
         return Response({"message": "Email verified successfully."}, status=status.HTTP_200_OK)
 
-    def generate_otp(self, user):
-        otp = random.randint(100000, 999999)
-        user.otp = otp
-        user.otp_expiration = now() + timedelta(seconds=59)
-        user.save()
-        return otp
-
 
 class LogoutAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "refresh": openapi.Schema(type=openapi.TYPE_STRING, description="Refresh token to blacklist"),
+            },
+            required=["refresh"],
+        ),
+        responses={
+            200: "Logout successful.",
+            400: "Invalid or expired token.",
+        },
+    )
     def post(self, request, *args, **kwargs):
         try:
             refresh_token = request.data.get("refresh")
@@ -133,6 +158,20 @@ class LogoutAPIView(APIView):
 class ForgotPasswordAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "email": openapi.Schema(type=openapi.TYPE_STRING, description="User's email"),
+            },
+            required=["email"],
+        ),
+        responses={
+            200: "OTP sent to your email.",
+            404: "User with this email does not exist or is not verified.",
+            500: "Failed to send email.",
+        },
+    )
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         if not email:
@@ -167,6 +206,23 @@ class ForgotPasswordAPIView(APIView):
 class ResetPasswordAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "email": openapi.Schema(type=openapi.TYPE_STRING, description="User's email"),
+                "otp": openapi.Schema(type=openapi.TYPE_STRING, description="OTP sent to the user's email"),
+                "new_password": openapi.Schema(type=openapi.TYPE_STRING, description="New password"),
+                "confirm_password": openapi.Schema(type=openapi.TYPE_STRING, description="Confirm new password"),
+            },
+            required=["email", "otp", "new_password", "confirm_password"],
+        ),
+        responses={
+            200: "Password reset successful.",
+            400: "Invalid or expired OTP, or passwords do not match.",
+            404: "User not found.",
+        },
+    )
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         otp = request.data.get("otp")
