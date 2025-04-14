@@ -56,6 +56,7 @@ LOCAL_APPS = [
     "apps.common.apps.CommonConfig",
     "apps.users.apps.UsersConfig",
     "apps.companies.apps.CompaniesConfig",
+    "apps.agents.apps.AgentsConfig"
 ]
 
 THIRD_PARTY_APPS = [
