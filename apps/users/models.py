@@ -113,10 +113,10 @@ class Agent(BaseModel):
     """This is a class for the agent models"""
 
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
-    agent_id = models.IntegerField(generate_agent_id, max_digits=6, blank=False)
+    agent_id = models.IntegerField(unique=True, max_digits=6, default=generate_agent_id)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, blank=False)
-    commission = models.DecimalField(max_digits=10, decimal_places=5)
-    rating = models.DecimalField(max_digits=10, decimal_places=3)
+    commission = models.DecimalField(max_digits=10, decimal_places=5, auto_round=True)
+    rating = models.DecimalField(max_digits=10, decimal_places=3, auto_round=True)
     status = models.CharField(max_length=20, default="active")
 
     class Meta:
