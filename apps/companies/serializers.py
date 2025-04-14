@@ -1,8 +1,10 @@
 from django.utils.translation import gettext_lazy as _
 from django.db import transaction
+from django.db import transaction
 from rest_framework import serializers
 from .models import Company
 from ..users.models import User
+from ..users.serializers import UserSerializer
 
 
 class CompanySerializer(serializers.ModelSerializer):
