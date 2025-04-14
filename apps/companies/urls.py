@@ -6,10 +6,10 @@ router = DefaultRouter()
 router.register(r"companies", CompanyViewSet)
 
 urlpatterns = [
-    path("", include(router.urls)),
     path(
-        "companies/<uuid:company_id>/metrics",
+        "companies/dashboard/",
         CompanyMetricsView.as_view(),
-        name="compant-metrics"
+        name="company-dashboard",
     ),
+    path("", include(router.urls)),
 ]

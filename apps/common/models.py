@@ -6,8 +6,8 @@ import uuid
 # Base Model providing common fields and methods
 # for all models in the application.
 class BaseModel(models.Model):
-    id = models.UUIDField(
-        default=uuid.uuid4, editable=False, primary_key=True
+    id = models.CharField(
+        default=str(uuid.uuid4()), editable=False, primary_key=True, max_length=36
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("created at"))
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("updated at"))
