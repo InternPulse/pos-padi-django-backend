@@ -75,8 +75,8 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     email = models.EmailField(unique=True, blank=False)
     phone = models.CharField(max_length=15, blank=False, validators=[phone_validator])
     photo = models.ImageField(validators=[validate_image_size])
-    national_id_front = models.ImageField(validators=[validate_image_size])
-    national_id_back = models.ImageField(validators=[validate_image_size])
+    # national_id_front = models.ImageField(validators=[validate_image_size])
+    # national_id_back = models.ImageField(validators=[validate_image_size])
     nin = models.CharField(max_length=11, validators=[MinLengthValidator(11)], blank=False)
     role = models.CharField(max_length=10, blank=False, choices=ROLE_CHOICES)
     is_verified = models.BooleanField(default=False)
@@ -92,9 +92,6 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         "phone",
         "nin",
         "role",
-        "photo",
-        "national_id_front",
-        "national_id_back",
     ]
 
     class Meta:

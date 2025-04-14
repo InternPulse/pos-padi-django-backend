@@ -22,14 +22,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "nin",
             "role",
             "photo",
-            "national_id_front",
-            "national_id_back",
             "password",
         ]
         extra_kwargs = {
-            "photo": {"required": True},
-            "national_id_front": {"required": True},
-            "national_id_back": {"required": True},
+            "photo": {"required": False},
         }
 
     def validate(self, data):
@@ -47,8 +43,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
             nin=validated_data["nin"],
             role=validated_data["role"],
             photo=validated_data["photo"],
-            national_id_front=validated_data["national_id_front"],
-            national_id_back=validated_data["national_id_back"],
         )
         return user
 
