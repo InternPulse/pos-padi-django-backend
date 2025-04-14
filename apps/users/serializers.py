@@ -59,3 +59,6 @@ class LoginSerializer(serializers.Serializer):
         if not user.is_verified:
             raise serializers.ValidationError("Email is not verified.")
         return user
+
+    class Meta:
+        ref_name = "CustomLoginSerializer"  # Unique name to avoid conflicts
