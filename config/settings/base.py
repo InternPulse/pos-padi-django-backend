@@ -56,6 +56,7 @@ LOCAL_APPS = [
     "apps.common.apps.CommonConfig",
     "apps.users.apps.UsersConfig",
     "apps.companies.apps.CompaniesConfig",
+    "apps.external_tables.apps.ExternalTablesConfig",
 ]
 
 THIRD_PARTY_APPS = [
@@ -63,7 +64,6 @@ THIRD_PARTY_APPS = [
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "drf_yasg",
-    "dj_rest_auth",
     "rest_framework.authtoken",
     "auditlog",
 ]
