@@ -47,7 +47,6 @@ drf_yasg_urls = [
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path("auth/", include(("config.auth_urls", "auth"), namespace="auth")),
     path("api/<str:version>/", include(("config.api_urls", "api"), namespace="api"))
 ] + drf_yasg_urls
 

@@ -28,7 +28,7 @@ class UserManager(BaseUserManager):
         try:
             validate_password(password)
         except ValidationError as e:
-            raise ValidationError(f"Invalid password: {e.messages}")
+            raise ValidationError(f"password: {e.messages}")
 
         user = self.model(
             email=self.normalize_email(email),
