@@ -159,6 +159,13 @@ DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 DB_HOST=your_db_host
 DB_PORT=5432
+
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your_email@gmail.com/company_email.com
+EMAIL_HOST_PASSWORD=app_password #app settings in Google
+DEFAULT_FROM_EMAIL=your_email@gmail.com/company_email.com
 ```
 
 ---
