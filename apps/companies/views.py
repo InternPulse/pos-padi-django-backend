@@ -11,6 +11,7 @@ from .models import Company
 from .serializers import CompanySerializer
 from .utils import send_deactivation_emails
 from ..users.permissions import IsOwnerOrSuperuser
+from ..agents.models import Agent
 from ..external_tables.models import Agent, Transaction
 
 
