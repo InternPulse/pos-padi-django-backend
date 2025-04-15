@@ -1,23 +1,44 @@
 from django.utils.translation import gettext_lazy as _
+from django.db import transaction
+from django.db import transaction
 from rest_framework import serializers
 from .models import Company
 from ..users.models import User
+from ..users.serializers import UserSerializer
 
 
 class CompanySerializer(serializers.ModelSerializer):
-    owner = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), write_only=True
-    )
-    owner_name = serializers.StringRelatedField(source="owner", read_only=True)
-    
+
     class Meta:
+        model = Company
         fields = "__all__"
-        read_only_fields = ["id", "created_at", "modified_at", "is_active"]
+        read_only_fields = ["id", "created_at", "modified_at", "is_active", "owner"]
 
-    def validate_owner(self, value):
-        if not value.role == "owner":
-            raise serializers.ValidationError(_("Owner must be of role 'owner'"))
-        return value
+    def validate(self, attrs):
+        super().validate(attrs)
 
-    
-        
+        if self.instance and "registration_number" in attrs:
+            raise serializers.ValidationError(
+                {"registration_number": "This field cannot be modified after creation"}
+            )
+
+        if self.instance and "name" in attrs:
+            raise serializers.ValidationError(
+                {"name": "This field cannot be modified after creation"}
+            )
+        return attrs
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        if user.role != "owner":
+            raise serializers.ValidationError(
+                {"error": _("Only owners can create companies.")}
+            )
+        if Company.objects.filter(owner=user).exists():
+            raise serializers.ValidationError(
+                {"error": _("User already has a company.")}
+            )
+        validated_data["owner"] = user
+        company = Company.objects.create(**validated_data)
+
+        return company
