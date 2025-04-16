@@ -1,0 +1,31 @@
+Temporal documentation for reference
+
+=============================================
+COMPANIES
+
+=============================================
+=============================================
+AGEMTS
+
+=============================================
+=============================================
+CUSTOMERS
+
+# Create customer with photo
+POST /api/v1/customers/
+Content-Type: multipart/form-data
+{
+    "name": "John Doe",
+    "phone": "+2349012345678",
+    "photo": <file>
+}
+
+# Get customers
+GET /api/v1/customers/
+
+# Update customer
+PATCH /api/v1/customers/1/
+{
+    "name": "John Smith"
+}
+=============================================
