@@ -10,10 +10,10 @@ class Agent(BaseModel):
     """This is a class for the pos agent tables"""
 
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
-    agent_id = models.IntegerField(unique=True, max_length=6, validators=[MinValueValidator(100000)])
+    agent_id = models.IntegerField(unique=True, validators=[MinValueValidator(100000)])
     company = models.ForeignKey(Company, on_delete=models.CASCADE, blank=False)
-    commission = models.DecimalField(max_digits=10, decimal_places=5, auto_round=True)
-    rating = models.DecimalField(max_digits=2, decimal_places=1, auto_round=True)
+    commission = models.DecimalField(max_digits=10, decimal_places=5)
+    rating = models.DecimalField(max_digits=2, decimal_places=1)
     status = models.CharField(max_length=20, default="inactive")
 
     class Meta:

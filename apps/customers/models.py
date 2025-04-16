@@ -54,5 +54,12 @@ class Customer(BaseModel):
                     self.customer_id = customer_id
                     break
         super().save(*args, **kwargs)
-    
-    
+
+class CustomerLoyaltyPoints(BaseModel):
+    customer = models.OneToOneField(Customer, on_delete=models.CASCADE, related_name='loyalty_points_record')
+    points = models.IntegerField(default=0)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.customer.name} - {self.points} points"
+
