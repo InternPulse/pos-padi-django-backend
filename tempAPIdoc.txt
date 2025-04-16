@@ -27,5 +27,9 @@ GET /api/v1/customers/
 PATCH /api/v1/customers/1/
 {
     "name": "John Smith"
+    "tag": "frequent"
 }
+
+# Filter customer by tag
+GET /api/v1/customers/?tag=vip
 =============================================
