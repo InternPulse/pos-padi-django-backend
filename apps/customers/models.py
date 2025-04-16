@@ -31,6 +31,14 @@ class Customer(BaseModel):
     )
     loyalty_points = models.IntegerField(default=0)
 
+    @property
+    def transactions(self):
+        return self.customer_transactions.all().order_by('-created_at')
+    
+    @property
+    def transaction_count(self):
+        return self.customer_transactions.count()
+    
     class Meta:
         ordering = ['-created_at']
         
@@ -46,3 +54,5 @@ class Customer(BaseModel):
                     self.customer_id = customer_id
                     break
         super().save(*args, **kwargs)
+    
+    
