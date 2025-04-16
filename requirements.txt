@@ -1,4 +1,5 @@
 asgiref==3.8.1
+colorama==0.4.6
 dj-rest-auth==7.0.1
 Django==5.2
 django-auditlog==3.0.0
@@ -22,4 +23,5 @@ PyYAML==6.0.2
 six==1.17.0
 sqlparse==0.5.3
 typing_extensions==4.13.2
+tzdata==2025.2
 uritemplate==4.1.1

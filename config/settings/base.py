@@ -50,6 +50,7 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 ]
 
 LOCAL_APPS = [
@@ -58,6 +59,7 @@ LOCAL_APPS = [
     "apps.companies.apps.CompaniesConfig",
     "apps.agents.apps.AgentsConfig",
     "apps.external_tables.apps.ExternalTablesConfig",
+    "apps.customers.apps.CustomersConfig",
 ]
 
 THIRD_PARTY_APPS = [
