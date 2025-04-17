@@ -28,12 +28,11 @@ class CompanyViewSet(ModelViewSet):
             ).select_related("owner")
         except AttributeError:
             return Company.objects.none()
-    
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["request"] = self.request
         return context
-
 
     @transaction.atomic
     def destroy(self, request, *args, **kwargs):
@@ -65,18 +64,15 @@ class CompanyViewSet(ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-    
-
 
 class CompanyMetricsView(APIView):
-    """
-    GET /api/v1/companies/dashboard/?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&agent_id=123456
-    """
 
     permission_classes = [IsOwnerOrSuperuser]
-    
 
     def get(self, request, **kwargs):
+        """
+        GET /api/v1/companies/dashboard/?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&agent_id=123456
+        """
 
         company = get_object_or_404(Company, owner=request.user.id)
 
@@ -151,7 +147,7 @@ class CompanyMetricsView(APIView):
                         output_field=IntegerField(),
                     )
                 ),
-                Value(0, output_field=IntegerField())
+                Value(0, output_field=IntegerField()),
             ),
             total_failed=Coalesce(
                 Sum(
@@ -161,12 +157,9 @@ class CompanyMetricsView(APIView):
                         output_field=IntegerField(),
                     )
                 ),
-                Value(0, output_field=IntegerField())
+                Value(0, output_field=IntegerField()),
             ),
-            total_amount=Coalesce(
-                Sum("amount"),
-                Value(0, output_field=DecimalField())
-                ),
+            total_amount=Coalesce(Sum("amount"), Value(0, output_field=DecimalField())),
             total_agents=Count("agent_id", distinct=True),
             total_customers=Count("customer_id", distinct=True),
         )

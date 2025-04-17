@@ -6,12 +6,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0001_initial'),
+        ('companies', '0002_initial'),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
+            model_name='company',
             name='id',
             field=models.CharField(default='88a43366-b283-4284-afe9-1cefdc532a3c', editable=False, max_length=36, primary_key=True, serialize=False),
         ),

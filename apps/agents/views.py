@@ -1,13 +1,14 @@
 from rest_framework.generics import CreateAPIView, RetrieveAPIView
-from models import Agent
-from serializers import AgentSerializer
-from ..users.permissions import IsOwner, IsAgent
+from rest_framework.views import APIView
+from .models import Agent
+from .serializers import AgentSerializer
+from ..users.permissions import IsOwnerOrSuperuser, IsOwnerOrAgentOrSuperuser
 
 
 class AgentCreateView(CreateAPIView):
     queryset = Agent.objects.all()
     serializer_class = AgentSerializer
-    permission_classes = [IsOwner]
+    permission_classes = [IsOwnerOrSuperuser]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -28,7 +29,7 @@ class AgentRetrieveView(RetrieveAPIView):
 
     def get_permissions(self):
         if self.request.user.is_authenticated:
-            self.permission_classes = [IsOwner | IsAgent]
+            self.permission_classes = [IsOwnerOrAgentOrSuperuser]
         else:
             self.permission_classes = []
         return super().get_permissions()
