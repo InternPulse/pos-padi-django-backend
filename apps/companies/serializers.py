@@ -4,7 +4,7 @@ from django.db import transaction
 from rest_framework import serializers
 from .models import Company
 from ..users.models import User
-from ..users.serializers import UserSerializer
+from ..users.serializers import RegistrationSerializer
 
 
 class CompanySerializer(serializers.ModelSerializer):

@@ -41,6 +41,8 @@ class AgentSerializer(serializers.ModelSerializer):
         user_serializer = RegistrationSerializer(data=user_data)
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
+        user.set_unusable_password()
+        user.save()
 
         agent = Agent.objects.create(user=user, **validated_data)
         agent.agent_id = generate_agent_id()
