@@ -1,5 +1,6 @@
 amqp==5.3.1
 asgiref==3.8.1
+async-timeout==5.0.1
 billiard==4.2.1
 celery==5.5.1
 channels==4.2.2
@@ -29,8 +30,6 @@ pillow==11.1.0
 pluggy==1.5.0
 prompt_toolkit==3.0.51
 PyJWT==2.9.0
-pytest==8.3.5
-pytest-django==4.11.1
 python-dateutil==2.9.0.post0
 pytz==2025.2
 PyYAML==6.0.2
@@ -42,3 +41,4 @@ tzdata==2025.2
 uritemplate==4.1.1
 vine==5.1.0
 wcwidth==0.2.13
+whitenoise==6.9.0
