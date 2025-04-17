@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
 from django.core.mail import send_mail, BadHeaderError
 from django.utils.timezone import now
+from django.conf import settings
 from datetime import timedelta
 import random
 from rest_framework.permissions import AllowAny
@@ -15,6 +16,15 @@ from rest_framework_simplejwt.exceptions import TokenError
 
 from .serializers import RegistrationSerializer, LoginSerializer
 from .models import User
+
+
+def generate_otp(user):
+    otp = random.randint(100000, 999999)
+    user.otp = otp
+    user.otp_expiration = now() + timedelta(seconds=59)
+    user.save()
+    return otp
+
 
 class RegistrationAPIView(APIView):
     parser_classes = [MultiPartParser, JSONParser]
@@ -32,12 +42,12 @@ class RegistrationAPIView(APIView):
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            otp = self.generate_otp(user)
+            otp = generate_otp(user)
             try:
                 send_mail(
                     subject="Verify Your Email",
                     message=f"Your OTP for email verification is: {otp}",
-                    from_email="steveaustine126@gmail.com",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[user.email],
                     fail_silently=False,
                 )
@@ -50,13 +60,13 @@ class RegistrationAPIView(APIView):
             except Exception as e:
                 return Response({"error": f"Email sending failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def generate_otp(self, user):
-        otp = random.randint(100000, 999999)
-        user.otp = otp
-        user.otp_expiration = now() + timedelta(seconds=59)
-        user.save()
-        return otp
+    
+    # def generate_otp(self, user):
+    #     otp = random.randint(100000, 999999)
+    #     user.otp = otp
+    #     user.otp_expiration = now() + timedelta(minutes=5)
+    #     user.save()
+    #     return otp
 
 
 class LoginAPIView(APIView):
@@ -182,7 +192,7 @@ class ForgotPasswordAPIView(APIView):
         except User.DoesNotExist:
             return Response({"error": "User with this email does not exist or is not verified."}, status=status.HTTP_404_NOT_FOUND)
 
-        otp = self.generate_otp(user)
+        otp = generate_otp(user)
         try:
             send_mail(
                 subject="Password Reset OTP",
@@ -195,12 +205,12 @@ class ForgotPasswordAPIView(APIView):
         except Exception as e:
             return Response({"error": f"Failed to send email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def generate_otp(self, user):
-        otp = random.randint(100000, 999999)
-        user.otp = otp
-        user.otp_expiration = now() + timedelta(minutes=10)
-        user.save()
-        return otp
+    # def generate_otp(self, user):
+    #     otp = random.randint(100000, 999999)
+    #     user.otp = otp
+    #     user.otp_expiration = now() + timedelta(minutes=10)
+    #     user.save()
+    #     return otp
 
 
 class ResetPasswordAPIView(APIView):
@@ -250,3 +260,59 @@ class ResetPasswordAPIView(APIView):
 
         return Response({"message": "Password reset successful."}, status=status.HTTP_200_OK)
 
+
+class GenerateNewOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "email": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="User's email"
+                ),
+                "otp": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="OTP sent to the user's email"
+                ),
+            },
+            required=["email", "otp"],
+        ),
+        responses={
+            200: "Email verified successfully.",
+            400: "Invalid or expired OTP.",
+            404: "User not found.",
+        },
+    )
+
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        if not email:
+            return Response(
+                {"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(email=email, is_verified=False)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User with this email does not exist or email is verified."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        otp = generate_otp(user)
+        try:
+            send_mail(
+                    subject="Verify Your Email",
+                    message=f"Your OTP for email verification is: {otp}",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    fail_silently=False,
+                )
+            return Response(
+                {"message": "Check your email for the OTP to verify your account."},
+                status=status.HTTP_201_CREATED
+            )
+        except BadHeaderError:
+            return Response({"error": "Invalid header found."}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": f"Email sending failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -166,3 +166,4 @@ cython_debug/
 #.idea/```
 
 media
+celerybeat-schedule.db

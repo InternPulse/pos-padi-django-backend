@@ -69,18 +69,21 @@ THIRD_PARTY_APPS = [
     "drf_yasg",
     "rest_framework.authtoken",
     "auditlog",
+    "channels",
+    "django_celery_results"
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -218,7 +221,7 @@ PASSWORD_RESET_CONFIRM_URL = "password_reset_confirm"
 # Django SMTP
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = env("EMAIL_HOST")
-EMAIL_PORT = 587
+EMAIL_PORT = 2525
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = env("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
@@ -237,3 +240,27 @@ AUDITLOG_INCLUDE_ALL_MODELS=True
 AUDITLOG_EXCLUDE_TRACKING_FIELDS = ("created_at", "modified_at")
 AUDITLOG_DISABLE_REMOTE_ADDR = True
 AUDITLOG_MASK_TRACKING_FIELDS = ("password",)
+
+
+ASGI_APPLICATION = "config.asgi.application"
+
+# Channels
+# https://channels.readthedocs.io/en/stable/topics/channel_layers.html
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [f"redis://{env('REDIS_HOST')}:{env.int('REDIS_PORT')}/0"],
+        },
+    },
+}
+
+
+# Celery
+# https://docs.celeryproject.org/en/stable/userguide/configuration.html
+CELERY_BROKER_URL = f"redis://{env('REDIS_HOST')}:{env.int('REDIS_PORT')}/1"
+CELERY_RESULT_BACKEND = f"redis://{env('REDIS_HOST')}:{env.int('REDIS_PORT')}/2"
+
+
+import pprint
+pprint.pprint(DATABASES)
