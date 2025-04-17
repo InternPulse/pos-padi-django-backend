@@ -16,6 +16,11 @@ class CustomerViewSet(viewsets.ModelViewSet):
         if self.request.user.is_superuser:
             return Customer.objects.all()
         return Customer.objects.filter(created_by=self.request.user.agent)
+    
+    def get_serializer_context(self):
+        context= super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
     @action(detail=True, methods=['get'])
     def transactions(self, request, pk=None):

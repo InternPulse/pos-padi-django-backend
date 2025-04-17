@@ -261,6 +261,3 @@ CHANNEL_LAYERS = {
 CELERY_BROKER_URL = f"redis://{env('REDIS_HOST')}:{env.int('REDIS_PORT')}/1"
 CELERY_RESULT_BACKEND = f"redis://{env('REDIS_HOST')}:{env.int('REDIS_PORT')}/2"
 
-
-import pprint
-pprint.pprint(DATABASES)

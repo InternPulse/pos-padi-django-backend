@@ -1,5 +1,14 @@
 from django.db import transaction
-from django.db.models import Sum, Count, Case, When, Value, IntegerField, DecimalField
+from django.db.models import (
+    Q,
+    Sum,
+    Count,
+    Case,
+    When,
+    Value,
+    IntegerField,
+    DecimalField,
+)
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_date
@@ -142,7 +151,7 @@ class CompanyMetricsView(APIView):
             total_successful=Coalesce(
                 Sum(
                     Case(
-                        When(status="completed", then=1),
+                        When(status="successful", then=1),
                         default=0,
                         output_field=IntegerField(),
                     )
@@ -159,17 +168,21 @@ class CompanyMetricsView(APIView):
                 ),
                 Value(0, output_field=IntegerField()),
             ),
-            total_amount=Coalesce(Sum("amount"), Value(0, output_field=DecimalField())),
+            total_amount=Coalesce(
+                Sum("amount", filter=Q(status="successful")),
+                Value(0, output_field=DecimalField()),
+            ),
             total_agents=Count("agent_id", distinct=True),
             total_customers=Count("customer_id", distinct=True),
         )
 
-        top_agents = (
-            transactions.values("agent_id")
-            .annotate(total=Sum("amount"))
-            .order_by("-total")[:5]
-        )
+        if not agent_id:
+            top_agents = (
+                transactions.values("agent_id")
+                .annotate(total=Sum("amount"))
+                .order_by("-total")[:5]
+            )
 
-        metrics = {**aggregates, "top_agents": list(top_agents)}
+            metrics = {**aggregates, "top_agents": list(top_agents)}
 
         return Response({"message": "Metrics retrieved successfully", "data": metrics})

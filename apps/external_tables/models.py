@@ -4,28 +4,9 @@ WARNING: Do not modify schemas (managed=False)!
 """
 
 from django.db import models
-from django.core.validators import MinLengthValidator, MaxValueValidator
 from ..common.models import BaseModel
-from ..companies.models import Company
-from ..users.models import User
 from ..agents.models import Agent
-# from ..customers.models import Customer, CustomerLoyaltyPoints
-
-
-class Customer(BaseModel):
-    user = models.ForeignKey(
-        User, on_delete=models.PROTECT, blank=False, related_name="user", null=True
-    )
-    loyalty_points = models.ManyToManyField(
-        Company,
-        through="CompanyLoyaltyPoints",
-        related_name="loyalty_points",
-    )
-    tag = models.CharField(max_length=10, null=True)
-
-    class Meta:
-        managed = False
-        db_table = "customers"
+from ..customers.models import Customer
 
 
 class Transaction(BaseModel):
@@ -56,16 +37,5 @@ class Transaction(BaseModel):
     )
 
     class Meta:
-        managed = True
-        db_table = "transactions"
-
-
-class CompanyLoyaltyPoints(BaseModel):
-    company = models.ForeignKey(Company, on_delete=models.PROTECT)
-    customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
-    loyalty_points = models.IntegerField(validators=[MinLengthValidator(0)])
-
-    class Meta:
         managed = False
-        db_table = "company_loyalty_points"
-        unique_together = (("company", "customer"),)
+        db_table = "transactions"
