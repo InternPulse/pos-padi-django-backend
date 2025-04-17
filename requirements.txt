@@ -8,6 +8,7 @@ click==8.1.8
 click-didyoumean==0.3.1
 click-plugins==1.1.1
 click-repl==0.3.0
+colorama==0.4.6
 dj-rest-auth==7.0.1
 Django==5.2
 django-auditlog==3.0.0

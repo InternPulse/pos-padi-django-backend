@@ -7,7 +7,7 @@ from ..users.models import User
 
 
 class Agent(BaseModel):
-    """This is a class for the agent tables"""
+    """This is a class for the pos agent tables"""
 
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
     agent_id = models.IntegerField(unique=True, validators=[MinValueValidator(100000)])

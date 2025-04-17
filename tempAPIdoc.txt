@@ -1,0 +1,46 @@
+Temporal documentation for reference
+
+=============================================
+COMPANIES
+
+=============================================
+=============================================
+AGEMTS
+
+=============================================
+=============================================
+CUSTOMERS
+
+# Create customer with photo
+POST /api/v1/customers/
+Content-Type: multipart/form-data
+{
+    "name": "John Doe",
+    "phone": "+2349012345678",
+    "photo": <file>
+}
+
+# Get customers
+GET /api/v1/customers/
+
+# Get a customer's full profile including transactions
+GET /api/v1/customers/{id}/
+
+# Get only transactions
+GET /api/v1/customers/{id}/transactions/
+
+# Get transaction summary
+GET /api/v1/customers/{id}/transaction_summary/
+
+# Update customer
+PATCH /api/v1/customers/{id}/
+{
+    "name": "John Smith"
+    "tag": "frequent"
+}
+
+# Filter customer by tag
+GET /api/v1/customers/?tag=vip
+
+
+=============================================
