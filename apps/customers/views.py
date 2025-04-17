@@ -15,6 +15,8 @@ class CustomerViewSet(viewsets.ModelViewSet):
     parser_classes = (MultiPartParser, FormParser)
     
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Customer.objects.none()  # Return an empty queryset for schema generation
         if self.request.user.is_superuser:
             return Customer.objects.all()
         return Customer.objects.filter(created_by=self.request.user.agent)
