@@ -74,7 +74,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     last_name = models.CharField(max_length=50, blank=False)
     email = models.EmailField(unique=True, blank=False)
     phone = models.CharField(max_length=15, blank=False, validators=[phone_validator])
-    photo = models.ImageField(validators=[validate_image_size])
+    photo = models.ImageField(validators=[validate_image_size], blank=True, null=True)
     # national_id_front = models.ImageField(validators=[validate_image_size])
     # national_id_back = models.ImageField(validators=[validate_image_size])
     nin = models.CharField(max_length=11, validators=[MinLengthValidator(11)], blank=False)
