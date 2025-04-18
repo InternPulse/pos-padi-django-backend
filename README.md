@@ -166,6 +166,10 @@ EMAIL_USE_TLS=True
 EMAIL_HOST_USER=your_email@gmail.com/company_email.com
 EMAIL_HOST_PASSWORD=app_password #app settings in Google
 DEFAULT_FROM_EMAIL=your_email@gmail.com/company_email.com
+
+REDIS_HOST=
+REDIS_PORT=
+
 ```
 
 ---
