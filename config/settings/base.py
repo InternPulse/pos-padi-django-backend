@@ -260,4 +260,3 @@ CHANNEL_LAYERS = {
 # https://docs.celeryproject.org/en/stable/userguide/configuration.html
 CELERY_BROKER_URL = f"redis://{env('REDIS_HOST')}:{env.int('REDIS_PORT')}/1"
 CELERY_RESULT_BACKEND = f"redis://{env('REDIS_HOST')}:{env.int('REDIS_PORT')}/2"
-
