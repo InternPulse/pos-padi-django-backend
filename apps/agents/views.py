@@ -41,12 +41,13 @@ class AgentRetrieveView(RetrieveAPIView):
         return context
 
     def get_queryset(self):
-        if self.request.user.is_superuser:
+        user = self.request.user
+        if getattr(user, 'is_superuser', False):
             return Agent.objects.all()
-        elif self.request.user.role == "agent":
-            return Agent.objects.filter(user=self.request.user)
-        elif self.request.role =="owner":
-            return Agent.objects.filter(company=self.request.user.company)
+        elif getattr(user, 'role', None) == "agent":
+            return Agent.objects.filter(user=user)
+        elif getattr(user, 'role', None) == "owner":
+            return Agent.objects.filter(company=user.company)
         return Agent.objects.none()
 
 class AgentMetricsView(APIView):
