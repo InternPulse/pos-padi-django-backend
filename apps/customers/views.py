@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from django.db import models  # Import models for database operations
 from .models import Customer
 from .serializers import CustomerSerializer
 from ..users.permissions import IsAgentOrSuperuser
@@ -19,7 +20,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
             return Customer.objects.none()  # Return an empty queryset for schema generation
         if self.request.user.is_superuser:
             return Customer.objects.all()
-        return Customer.objects.filter(created_by=self.request.user.agent)
+        return Customer.objects.filter(user=self.request.user)
     
     def get_serializer_context(self):
         context= super().get_serializer_context()
@@ -31,7 +32,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         responses={200: TransactionSerializer(many=True)},
     )
     @action(detail=True, methods=['get'])
-    def transactions(self, request, pk=None):
+    def transactions(self, request, pk=None, *args, **kwargs):
         customer = self.get_object()
         transactions = customer.transactions
         serializer = TransactionSerializer(transactions, many=True)
@@ -52,7 +53,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         )},
     )
     @action(detail=True, methods=['get'])
-    def transaction_summary(self, request, pk=None):
+    def transaction_summary(self, request, pk=None, *args, **kwargs):
         customer = self.get_object()
         summary = {
             'total_transactions': customer.transaction_count,
