@@ -9,6 +9,7 @@ from .models import User
 from .views import generate_otp
 import time  # Import time module for unique email and NIN generation
 import uuid  # Import uuid for unique ID generation
+from apps.customers.models import Customer
 
 class UserEndpointsTestCase(TestCase):
     @classmethod
@@ -27,6 +28,12 @@ class UserEndpointsTestCase(TestCase):
             nin="12345678901",  # Valid NIN
             role="customer",
             is_verified=True
+        )
+
+        # Create a customer associated with the test user
+        cls.test_customer = Customer.objects.create(
+            user=cls.test_user,
+            name="Test Customer"
         )
 
     def setUp(self):
