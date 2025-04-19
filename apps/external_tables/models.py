@@ -38,5 +38,5 @@ class Transaction(BaseModel):
     )
 
     class Meta:
-        managed = True
+        managed = False
         db_table = "transactions"
