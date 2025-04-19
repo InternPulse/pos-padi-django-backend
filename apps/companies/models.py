@@ -6,7 +6,7 @@ from ..common.validators import validate_image_size
 
 class Company(BaseModel):
 
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="company", blank=False)
+    owner = models.OneToOneField(User, on_delete=models.CASCADE, related_name="company", blank=False)
     name = models.CharField(max_length=100, unique=True, blank=False, editable=False)
     address = models.CharField(max_length=100, blank=False)
     registration_number = models.CharField(max_length=9, blank=False, unique=True)
