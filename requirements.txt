@@ -1,6 +1,5 @@
 amqp==5.3.1
 asgiref==3.8.1
-async-timeout==5.0.1
 billiard==4.2.1
 celery==5.5.1
 channels==4.2.2
@@ -9,7 +8,7 @@ click==8.1.8
 click-didyoumean==0.3.1
 click-plugins==1.1.1
 click-repl==0.3.0
-colorama==0.4.6
+dj-database-url==2.3.0
 dj-rest-auth==7.0.1
 Django==5.2
 django-auditlog==3.0.0
