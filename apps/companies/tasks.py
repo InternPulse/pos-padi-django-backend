@@ -1,8 +1,10 @@
+import json
+import redis
 from datetime import datetime
 from django.db.models import Sum, Count, Case, When, Value, IntegerField, DecimalField
 from django.db.models.functions import Coalesce
-from django.utils.dateparse import parse_date
-from django.core.cache import cache
+from django.conf import settings
+from django_redis import get_redis_connection
 from celery import shared_task
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -16,21 +18,36 @@ def broadcast_company_metrics():
     """Task to compute and broadcast company metrics"""
     channel_layer = get_channel_layer()
 
+    redis_url = settings.CACHES['default']['LOCATION']
+    redis_client = redis.from_url(redis_url)
+
     for company in Company.objects.all():
-        #    group_name = f"metrics_{(company.id)}"
         # Get all active connections for the company
-        connection_ids = cache.get(f"active_connections_{company.id}", [])
+        connection_ids = redis_client.lrange(f"company:{company.id}:connections", 0, -1)
+
+        connection_ids = [conn_id.decode() if isinstance(conn_id, bytes) else conn_id for conn_id in connection_ids]
 
         for connection_id in connection_ids:
-            filters = cache.get(f"filters_{connection_id}", {})
+            # Get filters for the connection
+            filters_str = redis_client.get(f"connection_filters:{connection_id}")
 
-            start_date = (
-                parse_date(filters.get("start_date")) if filters.get("start_date") else None
-            )
-            end_date = (
-                parse_date(filters.get("end_date")) if filters.get("end_date") else None
-            )
-            agent_id = filters.get("agent_id") if filters.get("agent_id") else None
+            if not filters_str:
+                filters = {}
+            else:
+                filters_str = filters_str.decode() if isinstance(filters_str, bytes) else filters_str
+                try:
+                    filters = json.loads(filters_str)
+                except json.JSONDecodeError:
+                    print(f"Invalid filter format for connection {connection_id}")
+                    filters = {}
+            
+            start_date = end_date = agent_id = None
+
+            if "date_range" in filters and filters["date_range"]:
+                start_date, end_date = filters["date_range"]
+            
+            if "agent_id" in filters:
+                agent_id = filters["agent_id"]
 
             metrics = compute_metrics(
                 company=company,
@@ -51,33 +68,29 @@ def broadcast_company_metrics():
                     },
                 },
             )
+    
+    return "Company metrics broadcast complete"
 
 
 def compute_metrics(company, start_date=None, end_date=None, agent_id=None):
     """Compute metrics for a given company."""
 
-    transactions = Transaction.objects.filter(agent_id__company=company).select_related(
+    filters = {"agent_id__company": company}
+
+    if start_date and end_date:
+        filters["created_at__range"] = [start_date, end_date]
+    elif start_date:
+        filters["created_at__range"] = start_date
+    elif end_date:
+        filters["created_at__lte"] = end_date
+
+    if agent_id:
+        filters["agent_id"] = agent_id
+
+    transactions = Transaction.objects.filter(**filters).select_related(
         "agent_id", "customer_id"
     )
 
-    if start_date and end_date:
-        date_range = [start_date, end_date]
-    if start_date:
-        date_range = [start_date]
-    if end_date:
-        date_range = [parse_date("2025-01-01"), end_date]
-    else:
-        date_range = None
-
-    if date_range:
-        filters = {"created_at__range": date_range}
-    if agent_id:
-        filters["agent_id"] = {"agent_id": agent_id}
-
-    if filters:
-        transactions = Transaction.objects.filter(**filters).select_related(
-            "agent_id", "customer_id"
-        )
     aggregates = transactions.aggregate(
         total_transactions=Count("id"),
         total_successful=Coalesce(
@@ -112,3 +125,10 @@ def compute_metrics(company, start_date=None, end_date=None, agent_id=None):
     )
 
     metrics = {**aggregates, "top_agents": list(top_agents)}
+
+    return metrics
+
+
+@shared_task
+def test_task():
+    print("Task ran")
