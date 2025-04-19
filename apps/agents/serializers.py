@@ -50,13 +50,13 @@ class AgentSerializer(serializers.ModelSerializer):
             "phone",
             "nin",
             "user",
+            "agent_id",
         )
-        read_only_fields = ["company"]
+        read_only_fields = ["company", "agent_id"]
 
     @transaction.atomic
     def create(self, validated_data):
         owner = self.context["request"].user
-        # company = Company.objects.filter(owner=owner).first()
         if not owner.company:
             raise serializers.ValidationError("Company not found")
         validated_data["company"] = owner.company
@@ -78,5 +78,4 @@ class AgentSerializer(serializers.ModelSerializer):
 
         agent = Agent.objects.create(user_id=user, **validated_data)
         agent.save()
-        print("AGENT_ID", agent.agent_id) # Debugging line
         return agent

@@ -89,7 +89,6 @@ class LoginAPIView(APIView):
         # Adding custom claims to the token
         access = refresh.access_token
         access["role"] = user.role
-        print("AGENT ID", user.agent) # Debugging line
 
         if user.role == "agent":
             access["agent_id"] = user.agent.agent_id
