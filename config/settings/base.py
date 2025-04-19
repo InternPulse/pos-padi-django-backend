@@ -32,7 +32,7 @@ env.read_env(str(BASE_DIR / ".env"))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env(
     "SECRET_KEY",
-    default="django-insecure-f=m*(!c_)p!!=^f*fva!bz#(9(@qg9r!gy2m#8kya+ad!*3#d*"
+    default="django-insecure-f=m*(!c_)p!!=^f*fva!bz#(9(@qg9r!gy2m#8kya+ad!*3#d*",
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -44,13 +44,14 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["127.0.0.1"])
 # Application definition
 
 DJANGO_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.sites',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "daphne",
+    "django.contrib.staticfiles",
+    "django.contrib.sites",
 ]
 
 LOCAL_APPS = [
@@ -70,7 +71,7 @@ THIRD_PARTY_APPS = [
     "rest_framework.authtoken",
     "auditlog",
     "channels",
-    "django_celery_results"
+    "django_celery_results",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -86,25 +87,26 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = "config.asgi.application"
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database
@@ -120,6 +122,12 @@ DATABASES = {
         "PORT": env("DB_PORT"),
     }
 }
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{env('REDIS_HOST')}:{env.int('REDIS_PORT')}/1",
+    }
+}
 
 
 # Password validation
@@ -127,16 +135,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -144,9 +152,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -165,14 +173,14 @@ STATICFILES_DIRS = [
 ]
 
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "users.User"
 
@@ -236,13 +244,13 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
 
 # Add custom authentication backends
 AUTHENTICATION_BACKENDS = [
-    'apps.users.backends.EmailBackend',
-    'django.contrib.auth.backends.ModelBackend',
+    "apps.users.backends.EmailBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 # Django AuditLog
 # https://django-auditlog.readthedocs.io/en/latest/usage.html#settings
-AUDITLOG_INCLUDE_ALL_MODELS=True
+AUDITLOG_INCLUDE_ALL_MODELS = True
 AUDITLOG_EXCLUDE_TRACKING_FIELDS = ("created_at", "modified_at")
 AUDITLOG_DISABLE_REMOTE_ADDR = True
 AUDITLOG_MASK_TRACKING_FIELDS = ("password",)
@@ -264,5 +272,5 @@ CHANNEL_LAYERS = {
 
 # Celery
 # https://docs.celeryproject.org/en/stable/userguide/configuration.html
-CELERY_BROKER_URL = f"redis://{env('REDIS_HOST')}:{env.int('REDIS_PORT')}/1"
-CELERY_RESULT_BACKEND = f"redis://{env('REDIS_HOST')}:{env.int('REDIS_PORT')}/2"
+CELERY_BROKER_URL = f"redis://{env('REDIS_HOST')}:{env.int('REDIS_PORT')}/0"
+CELERY_RESULT_BACKEND = f"redis://{env('REDIS_HOST')}:{env.int('REDIS_PORT')}/0"
