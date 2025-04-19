@@ -25,6 +25,7 @@ class Transaction(BaseModel):
         null=True,
         related_name='customer_transactions'
     )
+    description = models.CharField(max_length=255, null=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2, null=True)
     fee = models.DecimalField(max_digits=12, decimal_places=2, null=True)
     type = models.CharField(max_length=10, null=True)

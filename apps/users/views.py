@@ -85,10 +85,21 @@ class LoginAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data
         refresh = RefreshToken.for_user(user)
+
+        # Adding custom claims to the token
+        access = refresh.access_token
+        access["role"] = user.role
+
+        if user.role == "agent":
+            access["agent_id"] = user.agent.agent_id
+        elif user.role == "customer":
+            access["customer_id"] = user.customer.customer_id
+        
+
         return Response(
             {
                 "refresh": str(refresh),
-                "access": str(refresh.access_token),
+                "access": str(access),
             },
             status=status.HTTP_200_OK,
         )

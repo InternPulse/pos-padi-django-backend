@@ -65,9 +65,6 @@ class CompanyViewSet(ModelViewSet):
                     "agents_downgraded": Agent.objects.filter(
                         company=company, user__role="customer"
                     ).count(),
-                    "terminals_deactivated": Terminal.objects.filter(
-                        company_id=company.id, is_active=False
-                    ).count(),
                 },
             },
             status=status.HTTP_200_OK,

@@ -26,6 +26,7 @@ class AgentListCreateView(ListCreateAPIView):
         if self.request.user.is_superuser:
             return Agent.objects.all()
         elif self.request.user.role == "owner":
+            print(f"OWNER: {self.request.user.company}") # Debugging line
             return Agent.objects.filter(company=self.request.user.company)
         return Agent.objects.none()
 
