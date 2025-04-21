@@ -15,7 +15,7 @@ class CompanyConsumer(AsyncJsonWebsocketConsumer):
         if not self.scope["user"].is_authenticated:
             await self.close(code=4000, reason="Authentication required")
             return
-        
+
         await self.accept()
 
         self.conn = self.scope["connection_id"]
@@ -25,17 +25,20 @@ class CompanyConsumer(AsyncJsonWebsocketConsumer):
         try:
             self.filters = await self._validate_filters()
 
-            await self.channel_layer.group_add(
-                f"metrics_{self.company.id}",
-                self.channel_name
-            )
+            try:
+                await self.channel_layer.group_add(
+                    f"metrics_{self.company.id}",
+                    self.channel_name
+                )
+            except Exception as e:
+                print(f"Group add failed: {e}")
+
         except (ValidationError, PermissionDenied) as e:
             await self.close(code=4001, reason=str(e))
         except Exception as e:
             import traceback
             print(f"Traceback:\n{traceback.format_exc()}")
             await self.close(code=4000, reason="Internal server error")
-            
 
     async def _validate_filters(self):
         """Validate and convert all filters"""
@@ -44,7 +47,7 @@ class CompanyConsumer(AsyncJsonWebsocketConsumer):
             "date_range": await self._validate_dates(),
         }
         return filters
-    
+
     @database_sync_to_async
     def _validate_dates(self):
         start_date = end_date = None
@@ -55,7 +58,7 @@ class CompanyConsumer(AsyncJsonWebsocketConsumer):
                     raise ValidationError("Invalid start_date format (use YYYY-MM-DD)")
             except ValueError as e:
                 raise ValidationError(f"Invalid start_date: {str(e)}")
-            
+
         if "end_date" in self.params:
             try:
                 end_date = parse_date(self.params.get("end_date", None))
@@ -63,12 +66,12 @@ class CompanyConsumer(AsyncJsonWebsocketConsumer):
                     raise ValidationError("Invalid end_date format (use YYYY-MM-DD)")
             except ValueError as e:
                 raise ValidationError(f"Invalid end_date: {str(e)}")
-    
+
         if start_date and end_date and start_date > end_date:
             raise ValidationError("Start date must be before End date")
-        
+
         return (start_date, end_date)
-    
+
     @database_sync_to_async
     def _validate_agent(self):
         if not self.params.get("agent_id"):
@@ -83,7 +86,12 @@ class CompanyConsumer(AsyncJsonWebsocketConsumer):
 
     async def send_metrics(self, event):
         """Send metrics to the WebSocket"""
+        print(f"Consumer received message: {event.get('type')}")
+        print(f"Self connection ID: {self.conn}")
+        print(f"Event connection ID: {event.get('connection_id')}")
+
         if event.get("connection_id") == self.conn:
+            print(f"Sending to client: {event}")  # DEBUGGING LINE
             await self.send_json(
                 {
                     "type": "periodic_update",
@@ -91,12 +99,16 @@ class CompanyConsumer(AsyncJsonWebsocketConsumer):
                     "timestamp": event["timestamp"],
                 }
             )
+        else:
+            print(
+                f"Connection ID mismatch: {event.get('connection_id')} != {self.conn}"
+            )
 
     async def disconnect(self, close_code):
         if hasattr(self, "conn") and hasattr(self, "company"):
             # Get the raw Redis client from Django's cache
             redis_client = cache.client.get_client()
-            
+
             # Execute both operations in parallel
             await asyncio.gather(
                 # Remove connection ID from company's list
@@ -111,5 +123,3 @@ class CompanyConsumer(AsyncJsonWebsocketConsumer):
                 )
             )
         await super().disconnect(close_code)
-        
-    

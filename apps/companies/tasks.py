@@ -4,6 +4,7 @@ from datetime import datetime
 from django.db.models import Sum, Count, Case, When, Value, IntegerField, DecimalField
 from django.db.models.functions import Coalesce
 from django.conf import settings
+from django.core.cache import cache
 from django_redis import get_redis_connection
 from celery import shared_task
 from channels.layers import get_channel_layer
@@ -18,57 +19,59 @@ def broadcast_company_metrics():
     """Task to compute and broadcast company metrics"""
     channel_layer = get_channel_layer()
 
-    redis_url = settings.CACHES['default']['LOCATION']
-    redis_client = redis.from_url(redis_url)
-
     for company in Company.objects.all():
         # Get all active connections for the company
-        connection_ids = redis_client.lrange(f"company:{company.id}:connections", 0, -1)
+        connection_id = cache.get(f"company:{company.id}:connections", version=1)
 
-        connection_ids = [conn_id.decode() if isinstance(conn_id, bytes) else conn_id for conn_id in connection_ids]
+        if not connection_id:
+            print(f"No connection found for company {company.id}")
+            continue
+                
+        print(f"Found connection for company {company.id}: {connection_id}")
 
-        for connection_id in connection_ids:
-            # Get filters for the connection
-            filters_str = redis_client.get(f"connection_filters:{connection_id}")
+        # Get filters for the connection
+        filters_str = cache.get(f"connection_filters:{connection_id}")
 
-            if not filters_str:
+        if not filters_str:
+            filters = {}
+        else:
+            filters_str = filters_str.decode() if isinstance(filters_str, bytes) else filters_str
+            try:
+                filters = json.loads(filters_str)
+            except json.JSONDecodeError:
+                print(f"Invalid filter format for connection {connection_id}")
                 filters = {}
-            else:
-                filters_str = filters_str.decode() if isinstance(filters_str, bytes) else filters_str
-                try:
-                    filters = json.loads(filters_str)
-                except json.JSONDecodeError:
-                    print(f"Invalid filter format for connection {connection_id}")
-                    filters = {}
-            
-            start_date = end_date = agent_id = None
 
-            if "date_range" in filters and filters["date_range"]:
-                start_date, end_date = filters["date_range"]
-            
-            if "agent_id" in filters:
-                agent_id = filters["agent_id"]
+        start_date = end_date = agent_id = None
 
-            metrics = compute_metrics(
-                company=company,
-                agent_id=agent_id,
-                start_date=start_date,
-                end_date=end_date,
-            )
+        if "date_range" in filters and filters["date_range"]:
+            start_date, end_date = filters["date_range"]
 
+        if "agent_id" in filters:
+            agent_id = filters["agent_id"]
+
+        metrics = compute_metrics(
+            company=company,
+            agent_id=agent_id,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        # Send metrics to consumer
+        try:
+            print(f"Sending metrics to group for connection {connection_id}")
             async_to_sync(channel_layer.group_send)(
                 f"metrics_{company.id}",
                 {
                     "type": "send_metrics",
-                    "data": {
-                        "company_id": company.id,
-                        "metrics": metrics,
-                        "timestamp": datetime.now().isoformat(),
-                        "connection_id": connection_id,
-                    },
+                    "data": metrics,
+                    "timestamp": datetime.now().isoformat(),
+                    "connection_id": connection_id
                 },
             )
-    
+        except Exception as e:
+            print(f"Failed to send metrics to group: {e}")
+
     return "Company metrics broadcast complete"
 
 
@@ -117,6 +120,8 @@ def compute_metrics(company, start_date=None, end_date=None, agent_id=None):
         total_agents=Count("agent_id", distinct=True),
         total_customers=Count("customer_id", distinct=True),
     )
+
+    aggregates["total_amount"] = float(aggregates["total_amount"])
 
     top_agents = (
         transactions.values("agent_id")
