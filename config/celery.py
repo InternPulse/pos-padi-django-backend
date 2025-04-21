@@ -19,6 +19,6 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     "broadcast_company_metrics": {
         "task": "apps.companies.tasks.broadcast_company_metrics",
-        "schedule": crontab(minute="*/5"),
+        "schedule": crontab(minute="*/1"),
     },
 }

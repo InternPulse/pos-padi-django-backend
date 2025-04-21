@@ -23,6 +23,12 @@ def broadcast_company_metrics():
         # Get all active connections for the company
         connection_id = cache.get(f"company:{company.id}:connections", version=1)
 
+        if not connection_id:
+            print(f"No connection found for company {company.id}")
+            continue
+                
+        print(f"Found connection for company {company.id}: {connection_id}")
+
         # Get filters for the connection
         filters_str = cache.get(f"connection_filters:{connection_id}")
 
@@ -53,6 +59,7 @@ def broadcast_company_metrics():
 
         # Send metrics to consumer
         try:
+            print(f"Sending metrics to group for connection {connection_id}")
             async_to_sync(channel_layer.group_send)(
                 f"metrics_{company.id}",
                 {

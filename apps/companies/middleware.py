@@ -45,7 +45,8 @@ class ConnectionTrackerMiddleware:
             
             await self.cache.aadd(
                 f"company:{company.id}:connections",
-                connection_id
+                connection_id,
+                timeout=3600
             )
 
             scope.update({"connection_id": connection_id, "company": company})
