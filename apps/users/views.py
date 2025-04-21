@@ -55,18 +55,10 @@ class RegistrationAPIView(APIView):
                     {"message": "User registered successfully. Check your email for the OTP to verify your account."},
                     status=status.HTTP_201_CREATED
                 )
-            except BadHeaderError:
-                return Response({"error": "Invalid header found."}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
-                return Response({"error": f"Email sending failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                print(f"Error occurred while sending email: {e}")  # Log the actual error to the console
+                return Response({"error": "An error occurred while processing your request."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    # def generate_otp(self, user):
-    #     otp = random.randint(100000, 999999)
-    #     user.otp = otp
-    #     user.otp_expiration = now() + timedelta(minutes=5)
-    #     user.save()
-    #     return otp
 
 
 class LoginAPIView(APIView):
@@ -216,13 +208,6 @@ class ForgotPasswordAPIView(APIView):
         except Exception as e:
             return Response({"error": f"Failed to send email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    # def generate_otp(self, user):
-    #     otp = random.randint(100000, 999999)
-    #     user.otp = otp
-    #     user.otp_expiration = now() + timedelta(minutes=10)
-    #     user.save()
-    #     return otp
-
 
 class ResetPasswordAPIView(APIView):
     permission_classes = [AllowAny]
@@ -327,3 +312,31 @@ class GenerateNewOTPView(APIView):
             return Response({"error": "Invalid header found."}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": f"Email sending failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class RefreshTokenAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "refresh": openapi.Schema(type=openapi.TYPE_STRING, description="Refresh token to renew access token"),
+            },
+            required=["refresh"],
+        ),
+        responses={
+            200: "Access token refreshed successfully.",
+            400: "Invalid or expired refresh token.",
+        },
+    )
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.data.get("refresh")
+        if not refresh_token:
+            return Response({"error": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            access_token = refresh.access_token
+            return Response({"access": str(access_token)}, status=status.HTTP_200_OK)
+        except TokenError:
+            return Response({"error": "Invalid or expired refresh token."}, status=status.HTTP_400_BAD_REQUEST)
