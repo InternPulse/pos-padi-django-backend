@@ -1,6 +1,4 @@
 import asyncio
-import redis
-from django.conf import settings
 from asgiref.sync import sync_to_async
 from urllib.parse import parse_qs
 from django.utils.dateparse import parse_date
@@ -26,7 +24,7 @@ class CompanyConsumer(AsyncJsonWebsocketConsumer):
 
         try:
             self.filters = await self._validate_filters()
-            
+
             try:
                 await self.channel_layer.group_add(
                     f"metrics_{self.company.id}",
@@ -88,6 +86,10 @@ class CompanyConsumer(AsyncJsonWebsocketConsumer):
 
     async def send_metrics(self, event):
         """Send metrics to the WebSocket"""
+        print(f"Consumer received message: {event.get('type')}")
+        print(f"Self connection ID: {self.conn}")
+        print(f"Event connection ID: {event.get('connection_id')}")
+
         if event.get("connection_id") == self.conn:
             print(f"Sending to client: {event}")  # DEBUGGING LINE
             await self.send_json(
@@ -96,6 +98,10 @@ class CompanyConsumer(AsyncJsonWebsocketConsumer):
                     "data": event["data"],
                     "timestamp": event["timestamp"],
                 }
+            )
+        else:
+            print(
+                f"Connection ID mismatch: {event.get('connection_id')} != {self.conn}"
             )
 
     async def disconnect(self, close_code):
