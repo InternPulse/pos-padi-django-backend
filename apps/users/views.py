@@ -56,7 +56,6 @@ class RegistrationAPIView(APIView):
                     status=status.HTTP_201_CREATED
                 )
             except Exception as e:
-                print(f"Error occurred while sending email: {e}")  # Log the actual error to the console
                 return Response({"error": "An error occurred while processing your request."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
