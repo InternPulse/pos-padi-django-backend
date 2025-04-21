@@ -110,3 +110,13 @@ class UserEndpointsTestCase(TestCase):
         }
         response = self.client.post(self.reset_password_url, data, format='json')  # Use JSON format
         self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST])
+
+    def test_refresh_token_endpoint(self):
+        # Authenticate the client
+        self.client.force_authenticate(user=self.test_user)
+        refresh_token = str(RefreshToken.for_user(self.test_user))  # Generate refresh token
+        data = {"refresh": refresh_token}
+        refresh_url = reverse('api:refresh-token', kwargs={'version': 'v1'})
+        response = self.client.post(refresh_url, data, format='json')  # Use JSON format
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("access", response.data)
