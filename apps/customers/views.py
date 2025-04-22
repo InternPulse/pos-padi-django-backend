@@ -28,7 +28,85 @@ class CustomerViewSet(viewsets.ModelViewSet):
         return context
 
     @swagger_auto_schema(
+        operation_summary="List all customers",
+        operation_description="Retrieve a list of all customers. Only superusers can view all customers, while other users can only view their own customers.",
+        responses={
+            200: "List of customers retrieved successfully.",
+            403: "Permission denied.",
+        },
+    )
+    def list(self, request, *args, **kwargs):
+        """List all customers."""
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="Retrieve a specific customer",
+        operation_description="Retrieve details of a specific customer by their ID.",
+        responses={
+            200: "Customer details retrieved successfully.",
+            404: "Customer not found.",
+        },
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a specific customer."""
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="Create a new customer",
+        operation_description="Create a new customer by providing the required details.",
+        request_body=CustomerSerializer,
+        responses={
+            201: "Customer created successfully.",
+            400: "Invalid data provided.",
+        },
+    )
+    def create(self, request, *args, **kwargs):
+        """Create a new customer."""
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="Update a specific customer",
+        operation_description="Update details of a specific customer by their ID.",
+        request_body=CustomerSerializer,
+        responses={
+            200: "Customer updated successfully.",
+            400: "Invalid data provided.",
+            404: "Customer not found.",
+        },
+    )
+    def update(self, request, *args, **kwargs):
+        """Update a specific customer."""
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="Partially update a specific customer",
+        operation_description="Partially update details of a specific customer by their ID.",
+        request_body=CustomerSerializer,
+        responses={
+            200: "Customer partially updated successfully.",
+            400: "Invalid data provided.",
+            404: "Customer not found.",
+        },
+    )
+    def partial_update(self, request, *args, **kwargs):
+        """Partially update a specific customer."""
+        return super().partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="Delete a specific customer",
+        operation_description="Delete a specific customer by their ID.",
+        responses={
+            204: "Customer deleted successfully.",
+            404: "Customer not found.",
+        },
+    )
+    def destroy(self, request, *args, **kwargs):
+        """Delete a specific customer."""
+        return super().destroy(request, *args, **kwargs)
+
+    @swagger_auto_schema(
         operation_description="Retrieve transactions for a specific customer",
+        operation_summary="Customer transactions",
         responses={200: TransactionSerializer(many=True)},
     )
     @action(detail=True, methods=['get'])
@@ -40,6 +118,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(
         operation_description="Retrieve a summary of transactions for a specific customer",
+        operation_summary="Transaction summary",
         responses={200: openapi.Response(
             description="Transaction summary",
             examples={
