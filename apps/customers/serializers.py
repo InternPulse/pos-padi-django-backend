@@ -1,15 +1,17 @@
 from rest_framework import serializers
 from .models import Customer
+from ..users.serializers import RegistrationSerializer
 from ..external_tables.serializers import TransactionSerializer
 
 class CustomerSerializer(serializers.ModelSerializer):
     transactions = TransactionSerializer(many=True, read_only=True)
     transaction_count = serializers.IntegerField(read_only=True)
+    user = RegistrationSerializer(read_only=True)
 
     class Meta:
         model = Customer
         fields = [
-            'id', 'user', 'customer_id', 'name', 
+            'id', 'user', 'customer_id', 'first_name', "last_name",
             'photo', 'tag', 'loyalty_points', 'transactions',
             'transaction_count', 'created_at', 'updated_at'
         ]

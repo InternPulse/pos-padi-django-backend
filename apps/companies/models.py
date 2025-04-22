@@ -10,6 +10,7 @@ class Company(BaseModel):
     name = models.CharField(max_length=100, unique=True, blank=False)
     state = models.CharField(max_length=100, blank=False)
     lga = models.CharField(max_length=100, blank=False)
+    area = models.CharField(max_length=100, blank=False)
     # registration_number = models.CharField(max_length=9, blank=False, unique=True)
     # logo = models.ImageField(null=True, validators=[validate_image_size])
 

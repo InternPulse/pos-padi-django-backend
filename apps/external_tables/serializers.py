@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Transaction
+from .models import Transaction, Notification
 
 class TransactionSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
@@ -10,3 +10,9 @@ class TransactionSerializer(serializers.ModelSerializer):
             'id', 'amount', 'fee', 'type', 'status',
             'status_display', 'created_at'
         ]
+
+    
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = "__all__"

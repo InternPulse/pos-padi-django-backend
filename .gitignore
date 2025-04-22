@@ -168,3 +168,4 @@ cython_debug/
 media
 celerybeat-schedule.db
 test.html
+ca-certificate.pem

@@ -1,27 +1,35 @@
 # apps/users/views.py
+import random
+from datetime import timedelta
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from django.core.mail import send_mail, BadHeaderError
+from django.utils.timezone import now
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
-from django.core.mail import send_mail, BadHeaderError
-from django.utils.timezone import now
-from django.conf import settings
-from datetime import timedelta
-import random
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
-
-from .serializers import RegistrationSerializer, LoginSerializer
 from .models import User
+from .serializers import RegistrationSerializer, LoginSerializer
+from ..customers.serializers import CustomerSerializer, Customer
+from ..agents.serializers import AgentSerializer, Agent
+from ..companies.serializers import CompanySerializer, Company
+from ..external_tables.serializers import (
+    TransactionSerializer,
+    Transaction,
+    # Notification,
+    # NotificationSerializer,
+)
 
 
 def generate_otp(user):
     otp = random.randint(100000, 999999)
     user.otp = otp
-    user.otp_expiration = now() + timedelta(seconds=59)
+    user.otp_expiration = now() + timedelta(seconds=300)
     user.save()
     return otp
 
@@ -54,11 +62,16 @@ class RegistrationAPIView(APIView):
                     fail_silently=False,
                 )
                 return Response(
-                    {"message": "User registered successfully. Check your email for the OTP to verify your account."},
-                    status=status.HTTP_201_CREATED
+                    {
+                        "message": "User registered successfully. Check your email for the OTP to verify your account."
+                    },
+                    status=status.HTTP_201_CREATED,
                 )
             except Exception as e:
-                return Response({"error": "An error occurred while processing your request."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(
+                    {"error": "An error occurred while processing your request."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -89,7 +102,6 @@ class LoginAPIView(APIView):
             access["agent_id"] = user.agent.agent_id
         elif user.role == "customer":
             access["customer_id"] = user.customer.customer_id
-        
 
         return Response(
             {
@@ -109,8 +121,12 @@ class VerifyEmailAPIView(APIView):
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "email": openapi.Schema(type=openapi.TYPE_STRING, description="User's email"),
-                "otp": openapi.Schema(type=openapi.TYPE_STRING, description="OTP sent to the user's email"),
+                "email": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="User's email"
+                ),
+                "otp": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="OTP sent to the user's email"
+                ),
             },
             required=["email", "otp"],
         ),
@@ -125,22 +141,31 @@ class VerifyEmailAPIView(APIView):
         email = request.data.get("email")
 
         if not otp or not email:
-            return Response({"error": "OTP and email are required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "OTP and email are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
         if user.otp != otp or user.otp_expiration < now():
-            return Response({"error": "Invalid or expired OTP."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid or expired OTP."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         user.is_verified = True
         user.otp = None
         user.otp_expiration = None
         user.save()
 
-        return Response({"message": "Email verified successfully."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Email verified successfully."}, status=status.HTTP_200_OK
+        )
 
 
 class LogoutAPIView(APIView):
@@ -152,7 +177,9 @@ class LogoutAPIView(APIView):
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "refresh": openapi.Schema(type=openapi.TYPE_STRING, description="Refresh token to blacklist"),
+                "refresh": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="Refresh token to blacklist"
+                ),
             },
             required=["refresh"],
         ),
@@ -165,14 +192,22 @@ class LogoutAPIView(APIView):
         try:
             refresh_token = request.data.get("refresh")
             if not refresh_token:
-                return Response({"error": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "Refresh token is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             token = RefreshToken(refresh_token)
             token.blacklist()
 
-            return Response({"message": "Logout successful."}, status=status.HTTP_200_OK)
+            return Response(
+                {"message": "Logout successful."}, status=status.HTTP_200_OK
+            )
         except TokenError:
-            return Response({"error": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid or expired token."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class ForgotPasswordAPIView(APIView):
@@ -184,7 +219,9 @@ class ForgotPasswordAPIView(APIView):
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "email": openapi.Schema(type=openapi.TYPE_STRING, description="User's email"),
+                "email": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="User's email"
+                ),
             },
             required=["email"],
         ),
@@ -197,12 +234,17 @@ class ForgotPasswordAPIView(APIView):
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         if not email:
-            return Response({"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             user = User.objects.get(email=email, is_verified=True)
         except User.DoesNotExist:
-            return Response({"error": "User with this email does not exist or is not verified."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "User with this email does not exist or is not verified."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         otp = generate_otp(user)
         try:
@@ -213,9 +255,14 @@ class ForgotPasswordAPIView(APIView):
                 recipient_list=[user.email],
                 fail_silently=False,
             )
-            return Response({"message": "OTP sent to your email."}, status=status.HTTP_200_OK)
+            return Response(
+                {"message": "OTP sent to your email."}, status=status.HTTP_200_OK
+            )
         except Exception as e:
-            return Response({"error": f"Failed to send email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": f"Failed to send email: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class ResetPasswordAPIView(APIView):
@@ -227,10 +274,18 @@ class ResetPasswordAPIView(APIView):
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "email": openapi.Schema(type=openapi.TYPE_STRING, description="User's email"),
-                "otp": openapi.Schema(type=openapi.TYPE_STRING, description="OTP sent to the user's email"),
-                "new_password": openapi.Schema(type=openapi.TYPE_STRING, description="New password"),
-                "confirm_password": openapi.Schema(type=openapi.TYPE_STRING, description="Confirm new password"),
+                "email": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="User's email"
+                ),
+                "otp": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="OTP sent to the user's email"
+                ),
+                "new_password": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="New password"
+                ),
+                "confirm_password": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="Confirm new password"
+                ),
             },
             required=["email", "otp", "new_password", "confirm_password"],
         ),
@@ -247,25 +302,36 @@ class ResetPasswordAPIView(APIView):
         confirm_password = request.data.get("confirm_password")
 
         if not all([email, otp, new_password, confirm_password]):
-            return Response({"error": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "All fields are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if new_password != confirm_password:
-            return Response({"error": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
         if user.otp != otp or user.otp_expiration < now():
-            return Response({"error": "Invalid or expired OTP."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid or expired OTP."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         user.set_password(new_password)
         user.otp = None
         user.otp_expiration = None
         user.save()
 
-        return Response({"message": "Password reset successful."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Password reset successful."}, status=status.HTTP_200_OK
+        )
 
 
 class GenerateNewOTPView(APIView):
@@ -308,20 +374,26 @@ class GenerateNewOTPView(APIView):
         otp = generate_otp(user)
         try:
             send_mail(
-                    subject="Verify Your Email",
-                    message=f"Your OTP for email verification is: {otp}",
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    fail_silently=False,
-                )
+                subject="Verify Your Email",
+                message=f"Your OTP for email verification is: {otp}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
             return Response(
                 {"message": "Check your email for the OTP to verify your account."},
-                status=status.HTTP_201_CREATED
+                status=status.HTTP_201_CREATED,
             )
         except BadHeaderError:
-            return Response({"error": "Invalid header found."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid header found."}, status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
-            return Response({"error": f"Email sending failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": f"Email sending failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
 
 class RefreshTokenAPIView(APIView):
     permission_classes = [AllowAny]
@@ -332,7 +404,10 @@ class RefreshTokenAPIView(APIView):
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "refresh": openapi.Schema(type=openapi.TYPE_STRING, description="Refresh token to renew access token"),
+                "refresh": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Refresh token to renew access token",
+                ),
             },
             required=["refresh"],
         ),
@@ -344,11 +419,86 @@ class RefreshTokenAPIView(APIView):
     def post(self, request, *args, **kwargs):
         refresh_token = request.data.get("refresh")
         if not refresh_token:
-            return Response({"error": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Refresh token is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             refresh = RefreshToken(refresh_token)
             access_token = refresh.access_token
             return Response({"access": str(access_token)}, status=status.HTTP_200_OK)
         except TokenError:
-            return Response({"error": "Invalid or expired refresh token."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid or expired refresh token."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class UserSummaryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        if user.role == "owner":
+            user_data = RegistrationSerializer(user).data
+            company_data = CompanySerializer(Company.objects.filter(owner=user), many=True).data
+            agents = AgentSerializer(
+                Agent.objects.filter(company__owner=user), many=True
+            ).data
+            transactions = Transaction.objects.filter(
+                agent_id__company__owner=user
+            ).select_related("customer_id")
+            transactions_data = TransactionSerializer(transactions, many=True).data
+            # notifications_data = NotificationSerializer(
+            #     Notification.objects.filter(userId=user), many=True
+            # ).data
+            customer_ids = transactions.values_list("customer_id", flat=True).distinct()
+            customers_data = CustomerSerializer(
+                Customer.objects.filter(id__in=customer_ids), many=True
+            ).data
+
+            data = {
+                "user": user_data,
+                "company": company_data,
+                "agents": agents,
+                "transactions": transactions_data,
+                "customers": customers_data,
+                # "notifications_data": notifications
+            }
+
+        elif user.role == "agent":
+            user_data = AgentSerializer(user.agent).data
+            transactions = Transaction.objects.filter(agent_id__user_id=user)
+            company_data = CompanySerializer(user.agent.company).data
+            transactions_data = TransactionSerializer(transactions, many=True).data
+            # notifications_data = NotificationSerializer(
+            #     Notification.objects.filter(userId=user), many=True
+            # ).data
+            customer_ids = transactions.values_list("customer_id", flat=True).distinct()
+            customers_data = CustomerSerializer(
+                Customer.objects.filter(id__in=customer_ids), many=True
+            ).data
+
+            data = {
+                "user": user_data,
+                "company": company_data,
+                "transactions": transactions,
+                "customers_data": customers_data,
+                # "notifications": notifications_data,
+            }
+
+        elif user.role == "customer":
+            user_data = CustomerSerializer(Customer.objects.get(user=user))
+            transactions = Transaction.objects.filter(customer_id__user=user)
+            # notifications_data = NotificationSerializer(
+            #     Notification.objects.filter(userId=user), many=True
+            # ).data
+
+            data = {
+                "user": user_data,
+                "transactions": transactions,
+                # "notifications": notifications_data,
+            }
+
+        return Response(data)

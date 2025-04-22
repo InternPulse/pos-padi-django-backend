@@ -33,18 +33,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid role.")
         return data
 
-    # def create(self, validated_data):
-    #     user = User.objects.create_user(
-    #         email=validated_data["email"],
-    #         password=validated_data["password"],
-    #         first_name=validated_data["first_name"],
-    #         last_name=validated_data["last_name"],
-    #         phone=validated_data["phone"],
-    #         nin=validated_data["nin"],
-    #         role=validated_data["role"],
-    #         photo=validated_data["photo"],
-    #     )
-    #     return user
 
     def create(self, validated_data):
         password = validated_data.pop("password")

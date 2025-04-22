@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.db import transaction
 from ..companies.models import Company
 from ..users.models import User
+from ..users.serializers import RegistrationSerializer
 from .models import Agent
 
 
@@ -36,23 +37,15 @@ class AgentSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(required=True, write_only=True)
     phone = serializers.CharField(required=True, write_only=True)
     nin = serializers.CharField(required=True, write_only=True)
-    user = serializers.StringRelatedField(source="user_id", read_only=True)
+    user_id = AgentUserSerializer(read_only=True)
+    
 
     class Meta:
         model = Agent
-        fields = (
-            "commission",
-            "rating",
-            "status",
-            "email",
-            "first_name",
-            "last_name",
-            "phone",
-            "nin",
-            "user",
-            "agent_id",
-        )
+        fields = "__all__"
         read_only_fields = ["company", "agent_id"]
+    
+
 
     @transaction.atomic
     def create(self, validated_data):
