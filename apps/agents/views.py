@@ -6,6 +6,8 @@ from rest_framework.generics import RetrieveAPIView, ListCreateAPIView
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from .models import Agent
 from .serializers import AgentSerializer
 from ..users.permissions import IsOwnerOrSuperuser, IsOwnerOrAgentOrSuperuser, IsAgentOrSuperuser
@@ -30,6 +32,32 @@ class AgentListCreateView(ListCreateAPIView):
             return Agent.objects.filter(company=self.request.user.company)
         return Agent.objects.none()
 
+    @swagger_auto_schema(
+        operation_summary="List or create agents",
+        operation_description="Retrieve a list of agents or create a new agent for the authenticated user's company.",
+        responses={
+            200: "List of agents retrieved successfully.",
+            201: "Agent created successfully.",
+            400: "Invalid data provided.",
+            403: "Permission denied.",
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="Create a new agent",
+        operation_description="Create a new agent by providing the required details.",
+        request_body=AgentSerializer,
+        responses={
+            201: "Agent created successfully.",
+            400: "Invalid data provided.",
+            403: "Permission denied.",
+        },
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
 
 class AgentRetrieveView(RetrieveAPIView):
     queryset = Agent.objects.none()
@@ -51,9 +79,44 @@ class AgentRetrieveView(RetrieveAPIView):
             return Agent.objects.filter(company=user.company)
         return Agent.objects.none()
 
+    @swagger_auto_schema(
+        operation_summary="Retrieve a specific agent",
+        operation_description="Retrieve details of a specific agent by their ID.",
+        responses={
+            200: "Agent details retrieved successfully.",
+            404: "Agent not found.",
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
 class AgentMetricsView(APIView):
     permission_classes = [IsAgentOrSuperuser]
 
+    @swagger_auto_schema(
+        operation_summary="Retrieve agent metrics",
+        operation_description="Retrieve metrics for a specific agent, optionally filtered by date range.",
+        manual_parameters=[
+            openapi.Parameter(
+                "start_date",
+                openapi.IN_QUERY,
+                description="Start date for filtering metrics (YYYY-MM-DD).",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                "end_date",
+                openapi.IN_QUERY,
+                description="End date for filtering metrics (YYYY-MM-DD).",
+                type=openapi.TYPE_STRING,
+            ),
+        ],
+        responses={
+            200: "Metrics retrieved successfully.",
+            400: "Invalid date format or other errors.",
+            404: "Agent not found.",
+        },
+    )
     def get(self, request, *args, **kwargs):
         agent = get_object_or_404(Agent, user_id=self.request.user)
         
