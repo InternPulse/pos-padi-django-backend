@@ -16,6 +16,8 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from .models import Company
 from .serializers import CompanySerializer
 from .utils import send_deactivation_emails
@@ -69,6 +71,67 @@ class CompanyViewSet(ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+
+# Swagger documentation for CompanyViewSet
+CompanyViewSet.list = swagger_auto_schema(
+    operation_summary="Retrieve companies",
+    operation_description="Retrieve a list of companies owned by the authenticated user.",
+    responses={
+        200: "List of companies retrieved successfully.",
+        403: "Permission denied.",
+    },
+)(CompanyViewSet.list)
+
+CompanyViewSet.retrieve = swagger_auto_schema(
+    operation_summary="Retrieve a specific company",
+    operation_description="Retrieve details of a specific company by its ID.",
+    responses={
+        200: "Company details retrieved successfully.",
+        404: "Company not found.",
+    },
+)(CompanyViewSet.retrieve)
+
+CompanyViewSet.create = swagger_auto_schema(
+    operation_summary="Create a new company",
+    operation_description="Create a new company by providing the required details.",
+    request_body=CompanySerializer,
+    responses={
+        201: "Company created successfully.",
+        400: "Invalid data provided.",
+    },
+)(CompanyViewSet.create)
+
+CompanyViewSet.update = swagger_auto_schema(
+    operation_summary="Update a specific company",
+    operation_description="Update details of a specific company by its ID.",
+    request_body=CompanySerializer,
+    responses={
+        200: "Company updated successfully.",
+        400: "Invalid data provided.",
+        404: "Company not found.",
+    },
+)(CompanyViewSet.update)
+
+CompanyViewSet.partial_update = swagger_auto_schema(
+    operation_summary="Partially update a specific company",
+    operation_description="Partially update details of a specific company by its ID.",
+    request_body=CompanySerializer,
+    responses={
+        200: "Company partially updated successfully.",
+        400: "Invalid data provided.",
+        404: "Company not found.",
+    },
+)(CompanyViewSet.partial_update)
+
+CompanyViewSet.destroy = swagger_auto_schema(
+    operation_summary="Delete a specific company",
+    operation_description="Deactivate a specific company by its ID.",
+    responses={
+        200: "Company deactivated successfully.",
+        404: "Company not found.",
+    },
+)(CompanyViewSet.destroy)
 
 
 class CompanyMetricsView(APIView):
@@ -183,3 +246,35 @@ class CompanyMetricsView(APIView):
             metrics = {**aggregates, "top_agents": list(top_agents)}
 
         return Response({"message": "Metrics retrieved successfully", "data": metrics})
+
+
+# Swagger documentation for CompanyMetricsView
+CompanyMetricsView.get = swagger_auto_schema(
+    operation_summary="Retrieve company metrics",
+    operation_description="Retrieve metrics for a company, optionally filtered by date range and agent ID.",
+    manual_parameters=[
+        openapi.Parameter(
+            "start_date",
+            openapi.IN_QUERY,
+            description="Start date for filtering metrics (YYYY-MM-DD).",
+            type=openapi.TYPE_STRING,
+        ),
+        openapi.Parameter(
+            "end_date",
+            openapi.IN_QUERY,
+            description="End date for filtering metrics (YYYY-MM-DD).",
+            type=openapi.TYPE_STRING,
+        ),
+        openapi.Parameter(
+            "agent_id",
+            openapi.IN_QUERY,
+            description="Agent ID for filtering metrics.",
+            type=openapi.TYPE_STRING,
+        ),
+    ],
+    responses={
+        200: "Metrics retrieved successfully.",
+        400: "Invalid date format or other errors.",
+        404: "Agent not found.",
+    },
+)(CompanyMetricsView.get)
