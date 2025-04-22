@@ -17,7 +17,8 @@ class Customer(BaseModel):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     customer_id = models.CharField(max_length=6, unique=True)
-    name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
     photo = models.ImageField(upload_to="customer_photos/", null=True, blank=True)
     # created_by = models.ForeignKey(Agent, on_delete=models.PROTECT, related_name='customers')
     tag = models.CharField(

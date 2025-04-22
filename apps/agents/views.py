@@ -74,7 +74,7 @@ class AgentRetrieveView(RetrieveAPIView):
         if getattr(user, 'is_superuser', False):
             return Agent.objects.all()
         elif getattr(user, 'role', None) == "agent":
-            return Agent.objects.filter(user=user)
+            return Agent.objects.filter(user_id=user)
         elif getattr(user, 'role', None) == "owner":
             return Agent.objects.filter(company=user.company)
         return Agent.objects.none()
