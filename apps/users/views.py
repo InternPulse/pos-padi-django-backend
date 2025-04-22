@@ -31,6 +31,8 @@ class RegistrationAPIView(APIView):
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(
+        operation_summary="Register a new user",
+        operation_description="This endpoint allows a new user to register by providing their details. An OTP is sent to their email for verification.",
         request_body=RegistrationSerializer,
         responses={
             201: "User registered successfully. Check your email for the OTP to verify your account.",
@@ -65,6 +67,8 @@ class LoginAPIView(APIView):
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(
+        operation_summary="Login user",
+        operation_description="This endpoint allows a user to log in by providing their email and password. Returns access and refresh tokens.",
         request_body=LoginSerializer,
         responses={
             200: "Login successful. Returns access and refresh tokens.",
@@ -100,6 +104,8 @@ class VerifyEmailAPIView(APIView):
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(
+        operation_summary="Verify email",
+        operation_description="This endpoint verifies a user's email using the OTP sent to their email.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
@@ -141,6 +147,8 @@ class LogoutAPIView(APIView):
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(
+        operation_summary="Logout user",
+        operation_description="This endpoint logs out a user by blacklisting their refresh token.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
@@ -171,6 +179,8 @@ class ForgotPasswordAPIView(APIView):
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(
+        operation_summary="Forgot password",
+        operation_description="This endpoint sends an OTP to the user's email for password reset.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
@@ -212,6 +222,8 @@ class ResetPasswordAPIView(APIView):
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(
+        operation_summary="Reset password",
+        operation_description="This endpoint resets the user's password using the OTP sent to their email.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
@@ -260,25 +272,24 @@ class GenerateNewOTPView(APIView):
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(
+        operation_summary="Generate new OTP",
+        operation_description="This endpoint generates a new OTP for email verification.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
                 "email": openapi.Schema(
                     type=openapi.TYPE_STRING, description="User's email"
                 ),
-                "otp": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="OTP sent to the user's email"
-                ),
             },
-            required=["email", "otp"],
+            required=["email"],
         ),
         responses={
-            200: "Email verified successfully.",
-            400: "Invalid or expired OTP.",
-            404: "User not found.",
+            201: "Check your email for the OTP to verify your account.",
+            400: "Invalid header found.",
+            404: "User with this email does not exist or email is verified.",
+            500: "Email sending failed.",
         },
     )
-
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         if not email:
@@ -316,6 +327,8 @@ class RefreshTokenAPIView(APIView):
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(
+        operation_summary="Refresh access token",
+        operation_description="This endpoint refreshes the access token using the refresh token.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
