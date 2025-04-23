@@ -43,7 +43,7 @@ class Customer(BaseModel):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.name} ({self.customer_id})"
+        return f"{self.first_name} {self.last_name} ({self.customer_id})"
 
     def save(self, *args, **kwargs):
         if not self.customer_id:
