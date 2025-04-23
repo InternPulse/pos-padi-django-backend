@@ -1,16 +1,36 @@
+import jwt
+from datetime import datetime, timedelta
+from django.conf import settings
+from django.core.mail import send_mail
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_date
-from django.db.models import Q, Sum, Count, Case, When, Value, IntegerField, DecimalField
+from django.db.models import (
+    Q,
+    Sum,
+    Count,
+    Case,
+    When,
+    Value,
+    IntegerField,
+    DecimalField,
+)
 from django.db.models.functions import Coalesce
 from rest_framework.generics import RetrieveAPIView, ListCreateAPIView
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .models import Agent
 from .serializers import AgentSerializer
-from ..users.permissions import IsOwnerOrSuperuser, IsOwnerOrAgentOrSuperuser, IsAgentOrSuperuser
+from ..users.permissions import (
+    IsOwnerOrSuperuser,
+    IsOwnerOrAgentOrSuperuser,
+    IsAgentOrSuperuser,
+)
+from ..users.models import User
 from ..external_tables.models import Transaction
 
 
@@ -28,7 +48,7 @@ class AgentListCreateView(ListCreateAPIView):
         if self.request.user.is_superuser:
             return Agent.objects.all()
         elif self.request.user.role == "owner":
-            print(f"OWNER: {self.request.user.company}") # Debugging line
+            print(f"OWNER: {self.request.user.company}")  # Debugging line
             return Agent.objects.filter(company=self.request.user.company)
         return Agent.objects.none()
 
@@ -55,8 +75,80 @@ class AgentListCreateView(ListCreateAPIView):
             403: "Permission denied.",
         },
     )
+    @transaction.atomic()
     def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+        response = super().post(request, *args, **kwargs)
+        if response.status_code == status.HTTP_201_CREATED:
+            user = response.data.get("user_id")
+            user_email = user.get("email")
+            token = jwt.encode(
+                {"email": user_email, "exp": datetime.now() + timedelta(hours=1)},
+                settings.SECRET_KEY,
+                algorithm="HS256",
+            )
+            reset_url = request.build_absolute_uri(
+                f"/api/v1/agents/onboard/?token={token}"
+            )
+            print(reset_url)  # DEBUGGING LINE
+            send_mail(
+                subject="POS-Padi Onboarding",
+                message=f"Click the link to complete your onboarding: {reset_url}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user_email],
+            )
+        return response
+
+
+class AgentOnboardView(APIView):
+    permission_classes = [AllowAny]
+    queryset=Agent.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        print("HEREEE")
+        token = request.query_params.get("token")
+
+        if not token:
+            return Response(
+                {"error": "Token not provided."}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            email = payload.get("email")
+        except jwt.ExpiredSignatureError:
+            return Response(
+                {"error": "Token expired"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        except jwt.InvalidTokenError:
+            return Response({"error": "Invalid token"})
+
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        password = request.data.get("password")
+        confirm_password = request.data.get("confirm_password")
+
+        if not password or not confirm_password:
+            return Response(
+                {"error": "Password and confirm password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if password != confirm_password:
+            return Response(
+                {"error": "Passwords do not match"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user.set_password(password)
+        user.is_active = True
+        user.save()
+
+        return Response(
+            {"message": "Password set successfully. You can now log in."},
+            status=status.HTTP_200_OK,
+        )
 
 
 class AgentRetrieveView(RetrieveAPIView):
@@ -71,11 +163,11 @@ class AgentRetrieveView(RetrieveAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        if getattr(user, 'is_superuser', False):
+        if getattr(user, "is_superuser", False):
             return Agent.objects.all()
-        elif getattr(user, 'role', None) == "agent":
+        elif getattr(user, "role", None) == "agent":
             return Agent.objects.filter(user_id=user)
-        elif getattr(user, 'role', None) == "owner":
+        elif getattr(user, "role", None) == "owner":
             return Agent.objects.filter(company=user.company)
         return Agent.objects.none()
 
@@ -119,7 +211,7 @@ class AgentMetricsView(APIView):
     )
     def get(self, request, *args, **kwargs):
         agent = get_object_or_404(Agent, user_id=self.request.user)
-        
+
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
 
@@ -158,7 +250,7 @@ class AgentMetricsView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         if date_range:
             filters = {"agent_id": agent.id, "created_at__range": date_range}
         else:
@@ -193,13 +285,10 @@ class AgentMetricsView(APIView):
                 Sum("amount", filter=Q(status="successful")),
                 Value(0, output_field=DecimalField()),
             ),
-            total_customers=Count("customer_id", distinct=True)
+            total_customers=Count("customer_id", distinct=True),
         )
 
         return Response(
-            {
-                "message": "Metrics retrieved successfully",
-                "data": metrics
-            },
-            status=status.HTTP_200_OK
+            {"message": "Metrics retrieved successfully", "data": metrics},
+            status=status.HTTP_200_OK,
         )

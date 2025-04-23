@@ -1,5 +1,4 @@
 from .base import *  # noqa
-import dj_database_url
 
 
 DATABASES = {

@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import transaction
 from django.db.models import (
     Q,
@@ -152,6 +153,7 @@ class CompanyMetricsView(APIView):
             if start_date and end_date:
                 start_date_obj = parse_date(start_date)
                 end_date_obj = parse_date(end_date)
+                print(end_date)
 
                 if start_date_obj > end_date_obj:
                     return Response(
@@ -166,7 +168,7 @@ class CompanyMetricsView(APIView):
 
             elif start_date:
                 start_date_obj = parse_date(start_date)
-                date_range = [start_date_obj]
+                date_range = [start_date_obj, datetime.now().isoformat()]
 
             elif end_date:
                 end_date_obj = parse_date(end_date)
