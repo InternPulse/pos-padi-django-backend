@@ -21,8 +21,8 @@ from ..companies.serializers import CompanySerializer, Company
 from ..external_tables.serializers import (
     TransactionSerializer,
     Transaction,
-    # Notification,
-    # NotificationSerializer,
+    Notification,
+    NotificationSerializer,
 )
 
 
@@ -450,9 +450,9 @@ class UserSummaryView(APIView):
                 agent_id__company__owner=user
             ).select_related("customer_id")
             transactions_data = TransactionSerializer(transactions, many=True).data
-            # notifications_data = NotificationSerializer(
-            #     Notification.objects.filter(userId=user), many=True
-            # ).data
+            notifications_data = NotificationSerializer(
+                Notification.objects.filter(userId=user), many=True
+            ).data
             customer_ids = transactions.values_list("customer_id", flat=True).distinct()
             customers_data = CustomerSerializer(
                 Customer.objects.filter(id__in=customer_ids), many=True
@@ -464,7 +464,7 @@ class UserSummaryView(APIView):
                 "agents": agents,
                 "transactions": transactions_data,
                 "customers": customers_data,
-                # "notifications_data": notifications
+                "notifications": notifications_data
             }
 
         elif user.role == "agent":
@@ -472,9 +472,9 @@ class UserSummaryView(APIView):
             transactions = Transaction.objects.filter(agent_id__user_id=user)
             company_data = CompanySerializer(user.agent.company).data
             transactions_data = TransactionSerializer(transactions, many=True).data
-            # notifications_data = NotificationSerializer(
-            #     Notification.objects.filter(userId=user), many=True
-            # ).data
+            notifications_data = NotificationSerializer(
+                Notification.objects.filter(userId=user), many=True
+            ).data
             customer_ids = transactions.values_list("customer_id", flat=True).distinct()
             customers_data = CustomerSerializer(
                 Customer.objects.filter(id__in=customer_ids), many=True
@@ -485,20 +485,20 @@ class UserSummaryView(APIView):
                 "company": company_data,
                 "transactions": transactions,
                 "customers_data": customers_data,
-                # "notifications": notifications_data,
+                "notifications": notifications_data,
             }
 
         elif user.role == "customer":
             user_data = CustomerSerializer(Customer.objects.get(user=user))
             transactions = Transaction.objects.filter(customer_id__user=user)
-            # notifications_data = NotificationSerializer(
-            #     Notification.objects.filter(userId=user), many=True
-            # ).data
+            notifications_data = NotificationSerializer(
+                Notification.objects.filter(userId=user), many=True
+            ).data
 
             data = {
                 "user": user_data,
                 "transactions": transactions,
-                # "notifications": notifications_data,
+                "notifications": notifications_data,
             }
 
         return Response(data)
