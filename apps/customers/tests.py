@@ -10,40 +10,42 @@ from apps.companies.models import Company
 class CustomerEndpointsTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        # Create a test user and agent
+        # Create a test user
         cls.test_user = User.objects.create_user(
-            email="testagent@example.com",
+            email="testuser@example.com",
             password="StrongPassword123!",
             first_name="Test",
-            last_name="Agent",
+            last_name="User",
             phone="1234567890",
-            nin="12345678901",
-            role="agent",
-            is_verified=True
+            nin="A1234567890",
+            role="customer"
         )
 
-        # Create a test owner
-        cls.test_owner = User.objects.create_user(
-            email="testowner@example.com",
+        # Create a test agent
+        cls.test_agent = User.objects.create_user(
+            email="testagent@example.com",
             password="StrongPassword123!",
-            first_name="Test",
-            last_name="Owner",
+            first_name="Agent",
+            last_name="User",
             phone="0987654321",
-            nin="10987654321",
-            role="owner",
-            is_verified=True
+            nin="B1234567890",
+            role="agent"
         )
+        cls.test_agent.is_verified = True
+        cls.test_agent.save()
 
         # Create a test company
         cls.test_company = Company.objects.create(
-            owner=cls.test_owner,  # Assign the owner to the company
+            owner=cls.test_user,
             name="Test Company",
-            address="123 Test Street",
-            registration_number="123456789"
+            state="Test State",
+            lga="Test LGA",
+            area="Test Area"
         )
 
-        cls.test_agent = Agent.objects.create(
-            user_id=cls.test_user,
+        # Create an agent profile
+        cls.test_agent_profile = Agent.objects.create(
+            user_id=cls.test_agent,
             company=cls.test_company,  # Associate the agent with the test company
             commission=0.1,
             rating=5.0,
@@ -53,8 +55,9 @@ class CustomerEndpointsTestCase(APITestCase):
         # Create a test customer
         cls.test_customer = Customer.objects.create(
             user=cls.test_user,
-            name="Test Customer",
-            customer_id="123456"
+            first_name="Test",
+            last_name="Customer",
+            tag="regular"
         )
 
     def setUp(self):

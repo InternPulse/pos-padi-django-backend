@@ -33,7 +33,9 @@ class UserEndpointsTestCase(TestCase):
         # Create a customer associated with the test user
         cls.test_customer = Customer.objects.create(
             user=cls.test_user,
-            name="Test Customer"
+            first_name="Test",
+            last_name="Customer",
+            tag="regular"
         )
 
     def setUp(self):
@@ -120,3 +122,21 @@ class UserEndpointsTestCase(TestCase):
         response = self.client.post(refresh_url, data, format='json')  # Use JSON format
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("access", response.data)
+
+    def test_get_user_summary(self):
+        # Authenticate the client
+        self.client.force_authenticate(user=self.test_user)
+
+        # Define the URL for the user summary endpoint
+        user_summary_url = reverse('api:user-summary', kwargs={'version': 'v1'})
+
+        # Make a GET request to the user summary endpoint
+        response = self.client.get(user_summary_url, format='json')
+
+        # Assert the response status code is 200 OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Assert the response contains expected keys
+        expected_keys = ["user", "transactions"]
+        for key in expected_keys:
+            self.assertIn(key, response.data)

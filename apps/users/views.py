@@ -438,6 +438,14 @@ class RefreshTokenAPIView(APIView):
 class UserSummaryView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_summary="Get user summary",
+        operation_description="This endpoint retrieves a summary of the user's data, including associated companies, agents, transactions, and customers based on the user's role.",
+        responses={
+            200: "User summary retrieved successfully.",
+            403: "Authentication credentials were not provided or invalid.",
+        },
+    )
     def get(self, request, *args, **kwargs):
         user = request.user
         if user.role == "owner":
@@ -483,22 +491,23 @@ class UserSummaryView(APIView):
             data = {
                 "user": user_data,
                 "company": company_data,
-                "transactions": transactions,
+                "transactions": transactions_data,
                 "customers_data": customers_data,
                 "notifications": notifications_data,
             }
 
         elif user.role == "customer":
-            user_data = CustomerSerializer(Customer.objects.get(user=user))
+            user_data = CustomerSerializer(Customer.objects.get(user=user)).data
             transactions = Transaction.objects.filter(customer_id__user=user)
+            transactions_data = TransactionSerializer(transactions, many=True).data
             notifications_data = NotificationSerializer(
                 Notification.objects.filter(userId=user), many=True
             ).data
 
             data = {
                 "user": user_data,
-                "transactions": transactions,
                 "notifications": notifications_data,
+                "transactions": transactions_data,
             }
 
         return Response(data)

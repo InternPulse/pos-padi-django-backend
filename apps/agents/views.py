@@ -101,8 +101,39 @@ class AgentListCreateView(ListCreateAPIView):
 
 class AgentOnboardView(APIView):
     permission_classes = [AllowAny]
-    queryset=Agent.objects.all()
+    queryset = Agent.objects.all()
 
+    @swagger_auto_schema(
+        operation_summary="Onboard an agent",
+        operation_description="Complete the onboarding process for an agent by setting a password. Requires a valid token provided in the query parameters.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "password": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="The password to set for the agent."
+                ),
+                "confirm_password": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Confirmation of the password. Must match the password."
+                ),
+            },
+            required=["password", "confirm_password"],
+        ),
+        manual_parameters=[
+            openapi.Parameter(
+                "token",
+                openapi.IN_QUERY,
+                description="The token required for onboarding, provided in the query parameters.",
+                type=openapi.TYPE_STRING,
+                required=True,
+            ),
+        ],
+        responses={
+            200: "Password set successfully. You can now log in.",
+            400: "Invalid token, missing fields, or passwords do not match.",
+        },
+    )
     def post(self, request, *args, **kwargs):
         print("HEREEE")
         token = request.query_params.get("token")
