@@ -4,6 +4,7 @@ WARNING: Do not modify schemas (managed=False)!
 """
 
 from django.db import models
+from django.conf import settings
 from ..common.models import BaseModel
 from ..agents.models import Agent
 from ..customers.models import Customer
@@ -42,7 +43,7 @@ class Transaction(BaseModel):
     )
 
     class Meta:
-        managed = False
+        managed = not settings.TESTING  # Enable management during testing
         db_table = "transactions"
 
 

@@ -37,7 +37,7 @@ class CompanyViewSet(ModelViewSet):
         try:
             return Company.objects.filter(
                 owner=self.request.user, is_active=True
-            ).select_related("owner")
+            ).select_related("owner").order_by("id")
         except AttributeError:
             return Company.objects.none()
 
@@ -50,28 +50,17 @@ class CompanyViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         company = self.get_object()
 
-        Agent.objects.filter(company=company, user__role="agent").update(
-            role="customer"
-        )
+        # Update agents to remove their association with the company
+        Agent.objects.filter(company=company).update(company=None)
 
         company.owner.role = "customer"
         company.owner.save(update_fields=["role"])
 
         company.deactivate()
 
-        # Delay sending emails till changes commited to dB
+        # Delay sending emails till changes committed to the DB
         transaction.on_commit(lambda: send_deactivation_emails(company, request.user))
-        return Response(
-            {
-                "detail": "Company deactivated successfully",
-                "actions": {
-                    "agents_downgraded": Agent.objects.filter(
-                        company=company, user__role="customer"
-                    ).count(),
-                },
-            },
-            status=status.HTTP_200_OK,
-        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # Swagger documentation for CompanyViewSet
