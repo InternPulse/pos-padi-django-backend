@@ -10,12 +10,50 @@ from .views import generate_otp
 import time  # Import time module for unique email and NIN generation
 import uuid  # Import uuid for unique ID generation
 from apps.customers.models import Customer
+from django.db import connection
+from django.db import transaction
 
 class UserEndpointsTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         # Reset the database to ensure a clean state for tests
         call_command('flush', '--noinput')
+
+        # Manually create the transactions table for testing
+        with connection.cursor() as cursor:
+            with transaction.atomic():
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS transactions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        agent_id INTEGER,
+                        customer_id INTEGER,
+                        description TEXT,
+                        amount REAL,
+                        fee REAL,
+                        type TEXT,
+                        rating REAL,
+                        status TEXT,
+                        is_active BOOLEAN DEFAULT 1,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
+                ''')
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS notifications (
+                        id INTEGER PRIMARY KEY,
+                        userId INTEGER,
+                        title TEXT,
+                        message TEXT,
+                        data TEXT,
+                        deliveredAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        type TEXT,
+                        read BOOLEAN DEFAULT 0,
+                        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        readAt TIMESTAMP
+                    );
+                ''')
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+                print("All tables after creation:", cursor.fetchall())
 
         # Create a test user with a unique ID
         cls.test_user = User.objects.create_user(

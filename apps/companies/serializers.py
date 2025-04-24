@@ -36,12 +36,14 @@ class CompanySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context["request"].user
         if user.role != "owner":
+            print(f"Validation Error: User role is {user.role}, not 'owner'.")
             raise serializers.ValidationError(
-                {"error": _("Only owners can create companies.")}
+                {"error": _(f"Only owners can create companies. User role: {user.role}")}
             )
         if Company.objects.filter(owner=user).exists():
+            print(f"Validation Error: User ID {user.id} already owns a company.")
             raise serializers.ValidationError(
-                {"error": _("User already has a company.")}
+                {"error": _(f"User already has a company. User ID: {user.id}")}
             )
         validated_data["owner"] = user
         company = Company.objects.create(**validated_data)
