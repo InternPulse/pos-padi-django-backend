@@ -10,7 +10,7 @@ class Agent(BaseModel):
     """This is a class for the pos agent tables"""
 
     user_id = models.OneToOneField(User, on_delete=models.CASCADE, blank=False, related_name="agent")
-    agent_id = models.IntegerField(unique=True, validators=[MinValueValidator(100000)], null=True)
+    agent_id = models.CharField(unique=True, max_length=6, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, blank=False, related_name="agents")
     commission = models.DecimalField(max_digits=10, decimal_places=3, null=True)
     rating = models.DecimalField(max_digits=2, decimal_places=1, default=0.0)
