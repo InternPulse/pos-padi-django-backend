@@ -23,12 +23,14 @@ class Transaction(BaseModel):
         blank=False,
         null=True,
         related_name="transactions",
+        db_column="agent_id",
     )
     customer_id = models.ForeignKey(
         Customer,
         on_delete=models.PROTECT,
         null=True,
         related_name="customer_transactions",
+        db_column="customer_id",
     )
     description = models.CharField(max_length=255, null=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2, null=True)
@@ -47,7 +49,11 @@ class Transaction(BaseModel):
 class Notification(models.Model):
     id = models.IntegerField(primary_key=True)
     userId = models.ForeignKey(
-        User, on_delete=models.PROTECT, related_name="notifications"
+        User,
+        on_delete=models.PROTECT,
+        related_name="notifications",
+        db_column="userId",
+        null=True,
     )
     title = models.TextField()
     message = models.TextField()
@@ -61,3 +67,19 @@ class Notification(models.Model):
     class Meta:
         managed = False
         db_table = "notifications"
+
+
+class Dispute(BaseModel):
+    transaction_id = models.ForeignKey(
+        Transaction,
+        on_delete=models.PROTECT,
+        related_name="dispute",
+        db_column="transaction_id",
+        null=True,
+    )
+    status = models.CharField(max_length=50, null=True)
+    resolution_notes = models.TextField(null=True)
+
+    class Meta:
+        managed = False
+        db_table = "disputes"
