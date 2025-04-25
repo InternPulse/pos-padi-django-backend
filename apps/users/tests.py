@@ -41,14 +41,14 @@ class UserEndpointsTestCase(TestCase):
                 cursor.execute('''
                     CREATE TABLE IF NOT EXISTS notifications (
                         id INTEGER PRIMARY KEY,
-                        userId INTEGER,
+                        user_id INTEGER,
                         title TEXT,
                         message TEXT,
                         data TEXT,
-                        deliveredAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        delivered_id TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         type TEXT,
                         read BOOLEAN DEFAULT 0,
-                        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         readAt TIMESTAMP
                     );
                 ''')
