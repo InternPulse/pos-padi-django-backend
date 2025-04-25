@@ -69,7 +69,7 @@ class RegistrationAPIView(APIView):
                 )
             except Exception as e:
                 return Response(
-                    {"error": "An error occurred while processing your request."},
+                    {"error": f"An error occurred while processing your request. {e}"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

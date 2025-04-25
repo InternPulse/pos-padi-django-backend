@@ -49,7 +49,7 @@ class Transaction(BaseModel):
 
 class Notification(models.Model):
     id = models.IntegerField(primary_key=True)
-    userId = models.ForeignKey(
+    user_id = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
         related_name="notifications",
@@ -59,11 +59,11 @@ class Notification(models.Model):
     title = models.TextField()
     message = models.TextField()
     data = models.JSONField()
-    deliveredAt = models.DateTimeField(auto_now_add=True)
+    delivered_at = models.DateTimeField(auto_now_add=True)
     type = models.CharField(max_length=255)
     read = models.BooleanField(default=False)
-    createdAt = models.DateTimeField(auto_now_add=True)
-    readAt = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField()
 
     class Meta:
         managed = False

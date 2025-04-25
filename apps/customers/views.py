@@ -7,20 +7,29 @@ from drf_yasg import openapi
 from django.db import models  # Import models for database operations
 from .models import Customer
 from .serializers import CustomerSerializer
-from ..users.permissions import IsAgentOrSuperuser
+from ..users.permissions import IsOwnerOrAgentOrSuperuser, IsAgentOrSuperuser
 from ..external_tables.serializers import TransactionSerializer
 
 class CustomerViewSet(viewsets.ModelViewSet):
     serializer_class = CustomerSerializer
-    permission_classes = [IsAgentOrSuperuser]
-    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsOwnerOrAgentOrSuperuser]
     
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return Customer.objects.none()  # Return an empty queryset for schema generation
         if self.request.user.is_superuser:
             return Customer.objects.all()
-        return Customer.objects.filter(user=self.request.user)
+        elif self.request.user.role == "agent":
+            return Customer.objects.filter(created_by=self.request.user.agent)
+        elif self.request.user.role == "owner":
+            return Customer.objects.filter(created_by__company=self.request.user.company)
+    
+    def get_permissions(self):
+        if self.action in ["create"]:
+            permissions = [IsAgentOrSuperuser]
+        else:
+            permissions = [IsOwnerOrAgentOrSuperuser]
+        return [permission() for permission in permissions]
     
     def get_serializer_context(self):
         context= super().get_serializer_context()

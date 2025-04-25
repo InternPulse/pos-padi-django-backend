@@ -27,7 +27,7 @@ class CompanySerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         super().validate(attrs)
 
-        if self.instance and "name" in attrs:
+        if self.instance and ("name" in attrs or "owner" in attrs):
             raise serializers.ValidationError(
                 {"name": "This field cannot be modified after creation"}
             )
