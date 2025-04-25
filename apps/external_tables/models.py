@@ -53,7 +53,7 @@ class Notification(models.Model):
         User,
         on_delete=models.PROTECT,
         related_name="notifications",
-        db_column="userId",
+        db_column="user_id",
         null=True,
     )
     title = models.TextField()
