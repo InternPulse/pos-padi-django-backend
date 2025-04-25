@@ -31,6 +31,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data["role"] not in ["owner", "agent", "customer"]:
             raise serializers.ValidationError("Invalid role.")
+        
+        if self.instance and ("email" in data):
+            raise serializers.ValidationError(
+                {"email": "This field cannot be modified after creation"}
+            )
         return data
 
 

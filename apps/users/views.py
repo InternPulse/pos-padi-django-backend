@@ -69,7 +69,7 @@ class RegistrationAPIView(APIView):
                 )
             except Exception as e:
                 return Response(
-                    {"error": "An error occurred while processing your request."},
+                    {"error": f"An error occurred while processing your request. {e}"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -459,7 +459,7 @@ class UserSummaryView(APIView):
             ).select_related("customer_id")
             transactions_data = TransactionSerializer(transactions, many=True).data
             notifications_data = NotificationSerializer(
-                Notification.objects.filter(userId=user), many=True
+                Notification.objects.filter(user_id=user), many=True
             ).data
             customer_ids = transactions.values_list("customer_id", flat=True).distinct()
             customers_data = CustomerSerializer(
@@ -481,7 +481,7 @@ class UserSummaryView(APIView):
             company_data = CompanySerializer(user.agent.company).data
             transactions_data = TransactionSerializer(transactions, many=True).data
             notifications_data = NotificationSerializer(
-                Notification.objects.filter(userId=user), many=True
+                Notification.objects.filter(user_id=user), many=True
             ).data
             customer_ids = transactions.values_list("customer_id", flat=True).distinct()
             customers_data = CustomerSerializer(
@@ -501,7 +501,7 @@ class UserSummaryView(APIView):
             transactions = Transaction.objects.filter(customer_id__user=user)
             transactions_data = TransactionSerializer(transactions, many=True).data
             notifications_data = NotificationSerializer(
-                Notification.objects.filter(userId=user), many=True
+                Notification.objects.filter(user_id=user), many=True
             ).data
 
             data = {

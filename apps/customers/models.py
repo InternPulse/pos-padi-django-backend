@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import RegexValidator
 from ..common.models import BaseModel
+from ..common.validators import phone_validator
 from ..users.models import User
 from ..agents.models import Agent
 from ..companies.models import Company
@@ -15,12 +16,13 @@ class Customer(BaseModel):
         ("inactive", "Inactive"),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # user = models.OneToOneField(User, on_delete=models.CASCADE)
     customer_id = models.CharField(max_length=6, unique=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=15, validators=[phone_validator], blank=False, unique=True)
     photo = models.ImageField(upload_to="customer_photos/", null=True, blank=True)
-    # created_by = models.ForeignKey(Agent, on_delete=models.PROTECT, related_name='customers')
+    created_by = models.ForeignKey(Agent, on_delete=models.PROTECT, related_name='customers')
     tag = models.CharField(
         max_length=10,
         choices=TAG_CHOICES,

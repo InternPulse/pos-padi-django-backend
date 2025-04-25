@@ -173,7 +173,7 @@ class AgentOnboardView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         user.set_password(password)
-        user.is_active = True
+        user.is_verified = True
         user.save()
 
         return Response(
