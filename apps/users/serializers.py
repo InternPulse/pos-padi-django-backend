@@ -11,6 +11,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         write_only=True,
         validators=[validate_password],
     )
+    role = serializers.CharField(default="owner", read_only=True)
 
     class Meta:
         model = User
@@ -29,9 +30,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        if data["role"] not in ["owner", "agent", "customer"]:
-            raise serializers.ValidationError("Invalid role.")
-        
         if self.instance and ("email" in data):
             raise serializers.ValidationError(
                 {"email": "This field cannot be modified after creation"}

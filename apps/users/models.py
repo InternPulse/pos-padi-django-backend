@@ -77,7 +77,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     photo = models.ImageField(validators=[validate_image_size], blank=True, null=True)
     # national_id_front = models.ImageField(validators=[validate_image_size])
     # national_id_back = models.ImageField(validators=[validate_image_size])
-    nin = models.CharField(max_length=11, validators=[MinLengthValidator(11)], blank=False)
+    nin = models.CharField(max_length=11, validators=[MinLengthValidator(11)], blank=False, null=True)
     role = models.CharField(max_length=10, blank=False, choices=ROLE_CHOICES)
     is_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True, null=True)
