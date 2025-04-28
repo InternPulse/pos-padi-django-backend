@@ -8,6 +8,7 @@ from .models import Agent
 
 class AgentUserSerializer(serializers.ModelSerializer):
     # Serializer was created to avoid password requirement of RegistrationSerializer
+    role = serializers.CharField(default="agent", read_only=True)
     class Meta:
         model = User
         fields = [
