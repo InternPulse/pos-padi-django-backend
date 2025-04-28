@@ -134,6 +134,15 @@ class CompanyMetricsView(APIView):
         """
 
         company = get_object_or_404(Company, owner=request.user.id)
+        agents = Agent.objects.filter(company=company).values_list("agent_id", flat=True)
+        if not agents:
+            return Response(
+                {
+                    "message": "No agents found",
+                    "error": "No agents associated with this company.",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
@@ -176,9 +185,9 @@ class CompanyMetricsView(APIView):
             )
 
         if date_range:
-            filters = {"agent_id__company": company, "created_at__range": date_range}
+            filters = {"agent_id__in": agents, "created_at__range": date_range}
         else:
-            filters = {"agent_id__company": company}
+            filters = {"agent_id__in": agents}
 
         agent_id = request.query_params.get("agent_id")
         if agent_id:
