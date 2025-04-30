@@ -2,26 +2,24 @@
 
 ## Project Overview
 
-**PedMonie – Payment Integration App**  
+**POS-Padi – POS Transaction Management System**
 
-PedMonie is a Django-based payment integration app that leverages the Django REST Framework, built-in authentication, and JWT for secure API authentication. It provides a structured API with endpoints across multiple apps:  
+POS-Padi is a Django-based POS transaction management app that leverages the Django REST Framework, built-in authentication, and JWT for secure API authentication. It provides a structured API with endpoints across multiple apps:
 
-- **Authentication** – User registration, login, and JWT-based authentication.  
-- **Dashboard** – User and admin dashboards for transaction insights.  
-- **Orders** – Order creation, tracking, and management.  
-- **Payments** – Payment processing, transaction history, and status tracking.  
-- **Support** – Customer support ticketing and inquiry handling.  
-- **Wallets** – Digital wallet management, fund transfers, and balance tracking.  
+- **Users** – User registration, login, and JWT-based authentication.
+- **Companies** – Company creation, Agent registration and performance evaluation.
+- **Agents** – Agent onboarding and account management.
+- **Customers** – Customer tracking and loyalty rewards system.
 
-PedMonie ensures seamless payment handling with secure authentication and robust API endpoints for a smooth financial experience.
+POS-Padi is a robust API to help POS agents and business owners efficiently manage their operations. The platform addresses issues such as fraud, transaction disputes, and cash shortages by offering real-time insights, financial tools, and smart alerts. This API contains User Authentication, Company Sign up, Agent Onboarding and Customer Registration
 
 ## Live Link
 
-[API Live Demo](https://)
+[API Live Demo](https://pos-padi-django-backend.onrender.com/)
 
 ## Documentation Link
 
-Postman API Documentation [here](https://documenter.getpostman.com/view/41687429/2sAYdZttrw).
+Postman API Documentation [here](https://documenter.getpostman.com/view/43614350/2sB2ixjZkQ).
 
 ---
 
@@ -43,25 +41,25 @@ Ensure the following tools are installed:
 
     ```bash
     git clone https://github.com/InternPulse/pos-padi-django-backend.git
-    cd pedmonie-django-backend
+    cd pos-padi-django-backend
     ```
 
 2. **Set up a virtual environment:**
 
-    **Windows:**
+   **Windows:**
 
     ```bash
 
-    python -m venv venv
-    .\venv\Scripts\activate
+    python -m venv .venv
+    .\.venv\Scripts\activate
     ```
 
-    **macOS/Linux:**
+   **macOS/Linux:**
 
     ```bash
     
-    python -m venv venv
-    source venv/bin/activate
+    python -m venv .venv
+    source .venv/bin/activate
     ```
 
 3. **Install dependencies:**
@@ -88,7 +86,7 @@ Ensure the following tools are installed:
     python manage.py runserver
     ```
 
-    The API will be available at `http://127.0.0.1:8000`.
+   The API will be available at `http://127.0.0.1:8000`.
 
 ---
 
@@ -106,7 +104,7 @@ Ensure the following tools are installed:
 
 - Access the API locally at `http://127.0.0.1:8000/`.
 - Test endpoints using tools like Postman, cURL, or other API testing utilities.
-- Refer to the [API Documentation](https://documenter.getpostman.com/view/36548151/2sAYBPmZm1) for detailed instructions.
+- Refer to the [API Documentation](https://documenter.getpostman.com/view/43614350/2sB2ixjZkQ) for detailed instructions.
 
 ---
 
@@ -116,14 +114,14 @@ Ensure the following tools are installed:
 
 | Endpoint                                    | Method | Description                           |
 |---------------------------------------------|--------|---------------------------------------|
-| `/financial/analytics/`                     | GET    | Fetch all financial analytics records.|
-| `/financial/analytics/top_products/`        | GET    | Get top products by profitability.    |
-| `/financial/analytics/?year=2022`           | GET    | Filter analytics by year.             |
-| `/financial/analytics/?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD` | GET | Filter analytics by date range.       |
-| `/financial/analytics/profit_records/`      | GET    | Fetch records with profit only.       |
-| `/financial/analytics/selling_at_loss/`     | GET    | Fetch records with losses only.       |
+| `/users/register/`                          | POST   | Register an owner.                    |
+| `/users/verify/`                            | POST   | Owner email verification.             |
+| `/companies/`                               | POST   | Register a company.                   |
+| `/agents`                                   | POST   | Sign up an agent.                     |
+| `/companies/dashboard/?start_date=<string>&end_date=<string>&agent_id=<string>/`| GET    | Fetch a aggregation relevant metrics. |
+| `/users/summary`                            | GET    | Fetch a summary of all data linked to a user.|
 
-For a comprehensive list, refer to the [API Documentation](https://documenter.getpostman.com/view/36548151/2sAYBPmZm1).
+For a comprehensive list, refer to the [API Documentation](https://documenter.getpostman.com/view/43614350/2sB2ixjZkQ).
 
 ---
 
@@ -131,15 +129,23 @@ For a comprehensive list, refer to the [API Documentation](https://documenter.ge
 
 ```plaintext
 pos-padi-django-backend/
-├── analytics_service/
-│   ├── sales_performance/      # Sales Performance Analytics
-│   ├── product_performance/    # Product Performance Analytics
-│   ├── marketing_conversion/   # Marketing Analytics
-│   ├── profitability_financial/ # Financial Analytics
-│   ├── shared/                 # Shared utilities and helpers
-├── manage.py                   # Django entry point
-├── requirements.txt            # Python dependencies
-└── ...
+├── manage.py                     # Django command-line utility
+├── apps/                         # Django apps
+│   ├── common/                   # Shared utilities/models
+│   ├── agents/                   # Agents-related logic
+│   ├── companies/                # Company management
+│   ├── customers/                # Customer management
+│   ├── external_tables/          # External data integrations
+│   └── users/                    # User authentication & profiles
+│
+├── config/                       # Project configuration
+│   └── settings/                 # Django settings (split by environment)
+│       ├── base.py               # Base settings (shared)
+│       ├── test.py               # Test-specific settings
+│       ├── local.py              # Local development settings
+│       └── prod.py               # Production settings
+│
+...  
 ```
 
 ---
@@ -149,27 +155,33 @@ pos-padi-django-backend/
 Create a `.env` file in the root directory with the following keys:
 
 ```bash
-SECRET_KEY=your-secret-key
+DEFAULT_SECRET_KEY=your-secret-key
+DJANGO_SECRET_KEY=your_prod_secret-key
 DEBUG=True
 ALLOWED_HOSTS=127.0.0.1,localhost
 
-# PostgreSQL
-DB_NAME=your_db_name
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
+# MySQL
 DB_HOST=your_db_host
-DB_PORT=5432
+DB_USER=your_db_user
+DB_PORT=your_db_port
+DB_PASSWORD=your_db_passsword
+DB_NAME=your_db_name
+DB_CA_CERT_PATH=your_db_CA_cert_path(if applicable)
 
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
+# Django SMTP
+EMAIL_HOST=your_email_host
+EMAIL_PORT=your_email_port
 EMAIL_USE_TLS=True
-EMAIL_HOST_USER=your_email@gmail.com/company_email.com
-EMAIL_HOST_PASSWORD=app_password #app settings in Google
-DEFAULT_FROM_EMAIL=your_email@gmail.com/company_email.com
+EMAIL_HOST_USER=your_email_host_user
+EMAIL_HOST_PASSWORD=your_email_password
+DEFAULT_FROM_EMAIL=your_defualt_sending_email
 
-REDIS_HOST=
-REDIS_PORT=
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
 
+# CORS
+CORS_ALLOWED_ORIGINS=http://localhost
 ```
 
 ---
