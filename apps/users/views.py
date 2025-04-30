@@ -52,6 +52,7 @@ class RegistrationAPIView(APIView):
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+            user.role = "owner"  # Default role
             otp = generate_otp(user)
             try:
                 send_mail(
@@ -97,6 +98,7 @@ class LoginAPIView(APIView):
         # Adding custom claims to the token
         access = refresh.access_token
         access["role"] = user.role
+        
 
         if user.role == "agent":
             access["agent_id"] = user.agent.agent_id
