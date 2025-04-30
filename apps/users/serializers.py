@@ -11,7 +11,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         write_only=True,
         validators=[validate_password],
     )
-    role = serializers.CharField(default="owner", read_only=True)
+    role = serializers.ChoiceField(choices=User.ROLE_CHOICES, required=True)
 
     class Meta:
         model = User

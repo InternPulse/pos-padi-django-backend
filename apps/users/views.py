@@ -107,6 +107,8 @@ class LoginAPIView(APIView):
             {
                 "refresh": str(refresh),
                 "access": str(access),
+                "role": user.role,
+                "full_name": f"{user.first_name} {user.last_name}",
             },
             status=status.HTTP_200_OK,
         )
