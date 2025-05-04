@@ -8,7 +8,7 @@ from .models import Agent
 
 class AgentUserSerializer(serializers.ModelSerializer):
     # Serializer was created to avoid password requirement of RegistrationSerializer
-    role = serializers.CharField(default="agent", read_only=True)
+    role = serializers.CharField(default="agent", required=False)
     class Meta:
         model = User
         fields = [
@@ -16,7 +16,6 @@ class AgentUserSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "phone",
-            "nin",
             "role",
             "photo",
         ]
@@ -37,7 +36,7 @@ class AgentSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(required=True, write_only=True)
     last_name = serializers.CharField(required=True, write_only=True)
     phone = serializers.CharField(required=True, write_only=True)
-    nin = serializers.CharField(required=True, write_only=True)
+    nin = serializers.CharField(required=False, write_only=True)
     user_id = AgentUserSerializer(read_only=True)
     
 
@@ -45,8 +44,6 @@ class AgentSerializer(serializers.ModelSerializer):
         model = Agent
         fields = "__all__"
         read_only_fields = ["company", "agent_id"]
-    
-
 
     @transaction.atomic
     def create(self, validated_data):
@@ -54,13 +51,12 @@ class AgentSerializer(serializers.ModelSerializer):
         if not owner.company:
             raise serializers.ValidationError("Company not found")
         validated_data["company"] = owner.company
-
+        
         user_data = {
             "email": validated_data.pop("email"),
             "first_name": validated_data.pop("first_name"),
             "last_name": validated_data.pop("last_name"),
             "phone": validated_data.pop("phone"),
-            "nin": validated_data.pop("nin"),
             "role": "agent",
         }
 
