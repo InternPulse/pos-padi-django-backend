@@ -515,3 +515,62 @@ class UserSummaryView(APIView):
             }
 
         return Response(data)
+
+
+class ChangePasswordAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="Change password",
+        operation_description="This endpoint allows an authenticated user to change their password by providing the current password, a new password, and confirming the new password.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "current_password": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="Current password"
+                ),
+                "new_password": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="New password"
+                ),
+                "confirm_password": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="Confirm new password"
+                ),
+            },
+            required=["current_password", "new_password", "confirm_password"],
+        ),
+        responses={
+            200: "Password changed successfully.",
+            400: "Invalid current password or passwords do not match.",
+        },
+    )
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        current_password = request.data.get("current_password")
+        new_password = request.data.get("new_password")
+        confirm_password = request.data.get("confirm_password")
+
+        if not all([current_password, new_password, confirm_password]):
+            return Response(
+                {"error": "All fields are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not user.check_password(current_password):
+            return Response(
+                {"error": "Current password is incorrect."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if new_password != confirm_password:
+            return Response(
+                {"error": "New passwords do not match."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.set_password(new_password)
+        user.save()
+
+        return Response(
+            {"message": "Password changed successfully."},
+            status=status.HTTP_200_OK,
+        )
