@@ -87,7 +87,7 @@ class AgentListCreateView(ListCreateAPIView):
                 algorithm="HS256",
             )
             reset_url = request.build_absolute_uri(
-                f"/api/v1/agents/onboard/?token={token}"
+                f"https://pos-padi.netlify.app/agent-complete-signup/{token}/"
             )
             print(reset_url)  # DEBUGGING LINE
             send_mail(
