@@ -24,10 +24,8 @@ def broadcast_company_metrics():
         connection_id = cache.get(f"company:{company.id}:connections", version=1)
 
         if not connection_id:
-            print(f"No connection found for company {company.id}")
             continue
                 
-        print(f"Found connection for company {company.id}: {connection_id}")
 
         # Get filters for the connection
         filters_str = cache.get(f"connection_filters:{connection_id}")
@@ -39,7 +37,6 @@ def broadcast_company_metrics():
             try:
                 filters = json.loads(filters_str)
             except json.JSONDecodeError:
-                print(f"Invalid filter format for connection {connection_id}")
                 filters = {}
 
         start_date = end_date = agent_id = None
@@ -59,7 +56,6 @@ def broadcast_company_metrics():
 
         # Send metrics to consumer
         try:
-            print(f"Sending metrics to group for connection {connection_id}")
             async_to_sync(channel_layer.group_send)(
                 f"metrics_{company.id}",
                 {
@@ -133,7 +129,3 @@ def compute_metrics(company, start_date=None, end_date=None, agent_id=None):
 
     return metrics
 
-
-@shared_task
-def test_task():
-    print("Task ran")

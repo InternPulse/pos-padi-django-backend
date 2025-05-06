@@ -8,6 +8,7 @@ class Company(BaseModel):
 
     owner = models.OneToOneField(User, on_delete=models.CASCADE, related_name="company", blank=False)
     name = models.CharField(max_length=100, unique=True, blank=False)
+    address = models.CharField(max_length=100, blank=False)
     state = models.CharField(max_length=100, blank=False)
     lga = models.CharField(max_length=100, blank=False)
     area = models.CharField(max_length=100, blank=False)

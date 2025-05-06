@@ -37,7 +37,6 @@ class CompanyConsumer(AsyncJsonWebsocketConsumer):
             await self.close(code=4001, reason=str(e))
         except Exception as e:
             import traceback
-            print(f"Traceback:\n{traceback.format_exc()}")
             await self.close(code=4000, reason="Internal server error")
 
     async def _validate_filters(self):
@@ -86,12 +85,8 @@ class CompanyConsumer(AsyncJsonWebsocketConsumer):
 
     async def send_metrics(self, event):
         """Send metrics to the WebSocket"""
-        print(f"Consumer received message: {event.get('type')}")
-        print(f"Self connection ID: {self.conn}")
-        print(f"Event connection ID: {event.get('connection_id')}")
 
         if event.get("connection_id") == self.conn:
-            print(f"Sending to client: {event}")  # DEBUGGING LINE
             await self.send_json(
                 {
                     "type": "periodic_update",
