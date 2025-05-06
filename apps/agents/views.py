@@ -16,7 +16,7 @@ from django.db.models import (
     DecimalField,
 )
 from django.db.models.functions import Coalesce
-from rest_framework.generics import RetrieveAPIView, ListCreateAPIView
+from rest_framework.generics import RetrieveAPIView, ListCreateAPIView, RetrieveUpdateAPIView
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
@@ -48,7 +48,6 @@ class AgentListCreateView(ListCreateAPIView):
         if self.request.user.is_superuser:
             return Agent.objects.all()
         elif self.request.user.role == "owner":
-            print(f"OWNER: {self.request.user.company}")  # Debugging line
             return Agent.objects.filter(company=self.request.user.company)
         return Agent.objects.none()
 
@@ -89,7 +88,6 @@ class AgentListCreateView(ListCreateAPIView):
             reset_url = request.build_absolute_uri(
                 f"https://pos-padi.netlify.app/agent-complete-signup/{token}/"
             )
-            print(reset_url)  # DEBUGGING LINE
             send_mail(
                 subject="POS-Padi Onboarding",
                 message=f"Click the link to complete your onboarding: {reset_url}",
@@ -135,7 +133,6 @@ class AgentOnboardView(APIView):
         },
     )
     def post(self, request, *args, **kwargs):
-        print("HEREEE")
         token = request.query_params.get("token")
 
         if not token:
@@ -182,7 +179,7 @@ class AgentOnboardView(APIView):
         )
 
 
-class AgentRetrieveView(RetrieveAPIView):
+class AgentRetrieveUpdateView(RetrieveUpdateAPIView):
     queryset = Agent.objects.none()
     serializer_class = AgentSerializer
     permission_classes = [IsOwnerOrAgentOrSuperuser]
@@ -212,6 +209,22 @@ class AgentRetrieveView(RetrieveAPIView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+    
+    def patch(self, request, *args, **kwargs):
+        """
+        Update agent status
+        """
+        agent = self.get_object()
+    
+        # Toggle the status (no frontend input needed)
+        agent.status = "inactive" if instance.status == "active" else "active"
+        agent.save()
+        
+        return Response(
+            {"status": f"Agent status updated to {agent.status}"},
+            status=status.HTTP_200_OK,
+        )
+        
 
 
 class AgentMetricsView(APIView):

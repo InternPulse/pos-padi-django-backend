@@ -8,20 +8,11 @@ from ..agents.serializers import AgentSerializer
 
 class CompanySerializer(serializers.ModelSerializer):
     owner = RegistrationSerializer(read_only=True)
-    # agents = AgentSerializer(many=True, read_only=True)
-    # customers = serializers.SerializerMethodField()
 
     class Meta:
         model = Company
         fields = "__all__"
         read_only_fields = ["id", "created_at", "modified_at", "is_active", "owner"]
-
-    # def get_customers(self, obj):
-    #     customers = User.objects.filter(
-    #         customer__customer_transactions__agent_id__company=obj, role="customer"
-    #     ).distinct()
-    #     return RegistrationSerializer(customers, many=True).data
-    
     
 
     def validate(self, attrs):
@@ -36,12 +27,10 @@ class CompanySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context["request"].user
         if user.role != "owner":
-            print(f"Validation Error: User role is {user.role}, not 'owner'.")
             raise serializers.ValidationError(
                 {"error": _(f"Only owners can create companies. User role: {user.role}")}
             )
         if Company.objects.filter(owner=user).exists():
-            print(f"Validation Error: User ID {user.id} already owns a company.")
             raise serializers.ValidationError(
                 {"error": _(f"User already has a company. User ID: {user.id}")}
             )
