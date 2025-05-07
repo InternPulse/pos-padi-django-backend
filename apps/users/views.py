@@ -500,6 +500,7 @@ class UserSummaryView(APIView):
                 "notifications": notifications_data,
             }
 
+
         elif user.role == "customer":
             user_data = CustomerSerializer(Customer.objects.get(user=user)).data
             transactions = Transaction.objects.filter(customer_id__user=user)

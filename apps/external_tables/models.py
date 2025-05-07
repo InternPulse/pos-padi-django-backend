@@ -48,9 +48,9 @@ class Transaction(BaseModel):
 
 
 class Notification(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.UUIDField(primary_key=True)
     user_id = models.ForeignKey(
-        User,
+        Agent,
         on_delete=models.PROTECT,
         related_name="notifications",
         db_column="user_id",

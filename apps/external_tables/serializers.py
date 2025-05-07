@@ -8,8 +8,11 @@ class TransactionSerializer(serializers.ModelSerializer):
         model = Transaction
         fields = "__all__"
 
-    
+
 class NotificationSerializer(serializers.ModelSerializer):
+    user_id = serializers.UUIDField()
+
     class Meta:
         model = Notification
         fields = "__all__"
+
