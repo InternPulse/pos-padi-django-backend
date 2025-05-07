@@ -59,11 +59,11 @@ class Notification(models.Model):
     title = models.TextField()
     message = models.TextField()
     data = models.JSONField()
-    delivered_at = models.DateTimeField(auto_now_add=True)
+    delivered_at = models.CharField(max_length=255)
     type = models.CharField(max_length=255)
     read = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    read_at = models.DateTimeField()
+    created_at = models.CharField(max_length=255)
+    read_at = models.CharField(max_length=255, null=True)
 
     class Meta:
         managed = False

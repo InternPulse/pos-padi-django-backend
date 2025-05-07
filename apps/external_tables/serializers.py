@@ -6,10 +6,7 @@ class TransactionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Transaction
-        fields = [
-            'id', 'amount', 'fee', 'type', 'status',
-            'status_display', 'created_at'
-        ]
+        fields = "__all__"
 
     
 class NotificationSerializer(serializers.ModelSerializer):
