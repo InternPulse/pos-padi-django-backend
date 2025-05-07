@@ -81,7 +81,7 @@ class AgentListCreateView(ListCreateAPIView):
             user = response.data.get("user_id")
             user_email = user.get("email")
             token = jwt.encode(
-                {"email": user_email, "exp": datetime.now() + timedelta(hours=1)},
+                {"email": user_email, "exp": datetime.now() + timedelta(hours=24)},
                 settings.SECRET_KEY,
                 algorithm="HS256",
             )
