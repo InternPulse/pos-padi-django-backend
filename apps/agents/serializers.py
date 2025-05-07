@@ -12,6 +12,7 @@ class AgentUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
+            "id",
             "email",
             "first_name",
             "last_name",
@@ -42,7 +43,7 @@ class AgentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Agent
-        fields = "__all__"
+        exclude = ["id"]
         read_only_fields = ["company", "agent_id"]
 
     @transaction.atomic
