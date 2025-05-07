@@ -15,9 +15,9 @@ from ..common.validators import phone_validator, validate_image_size
 
 class UserManager(BaseUserManager):
     def create_user(
-        self, email, password, first_name, last_name, phone, nin, role, **extra_fields
+        self, email, password, first_name, last_name, phone, role, **extra_fields
     ):
-        if not all([email, password, first_name, last_name, phone, nin, role]):
+        if not all([email, password, first_name, last_name, phone, role]):
             raise ValueError("All fields are required.")
 
         if role not in ["owner", "agent", "customer"]:
@@ -35,7 +35,6 @@ class UserManager(BaseUserManager):
             first_name=first_name,
             last_name=last_name,
             phone=phone,
-            nin=nin,
             role=role,
             **extra_fields,
         )
@@ -45,17 +44,14 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(
-        self, email, password, first_name, last_name, phone, nin, role, **extra_fields
+        self, email, password, first_name, last_name, phone, role, **extra_fields
     ):
-        extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
         user = self.create_user(
-            email, password, first_name, last_name, phone, nin, role, **extra_fields
+            email, password, first_name, last_name, phone, role, **extra_fields
         )
 
-        if not user.is_staff:
-            raise ValueError("Superuser must have is_staff=True.")
         if not user.is_superuser:
             raise ValueError("Superuser must have is_superuser=True.")
 
