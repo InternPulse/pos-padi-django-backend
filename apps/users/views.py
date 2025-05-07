@@ -485,7 +485,7 @@ class UserSummaryView(APIView):
             company_data = CompanySerializer(user.agent.company).data
             transactions_data = TransactionSerializer(transactions, many=True).data
             notifications_data = NotificationSerializer(
-                Notification.objects.filter(user_id=user.agent.id), many=True
+                Notification.objects.filter(user_id=user.id), many=True
             ).data
             customer_ids = transactions.values_list("customer_id", flat=True).distinct()
             customers_data = CustomerSerializer(
