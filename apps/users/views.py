@@ -99,6 +99,8 @@ class LoginAPIView(APIView):
         access = refresh.access_token
         access["role"] = user.role
         
+        if user.role == "owner":
+            access["company_id"] = user.company.company_id
 
         if user.role == "agent":
             access["agent_id"] = user.agent.agent_id
