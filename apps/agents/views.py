@@ -214,10 +214,16 @@ class AgentRetrieveUpdateView(RetrieveUpdateAPIView):
         """
         Update agent status
         """
+        if request.data:
+            return Response(
+                {"error": "This endpoint does not accept any data in the request"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         agent = self.get_object()
     
         # Toggle the status (no frontend input needed)
-        agent.status = "inactive" if instance.status == "active" else "active"
+        agent.status = "inactive" if agent.status == "active" else "active"
         agent.save()
         
         return Response(
