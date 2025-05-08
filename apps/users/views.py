@@ -100,7 +100,7 @@ class LoginAPIView(APIView):
         access["role"] = user.role
         
         if user.role == "owner":
-            access["company_id"] = user.company.company_id
+            access["company_id"] = user.company.id
 
         if user.role == "agent":
             access["agent_id"] = user.agent.agent_id
