@@ -575,3 +575,81 @@ class ChangePasswordAPIView(APIView):
             {"message": "Password changed successfully."},
             status=status.HTTP_200_OK,
         )
+
+class EmailToggleSettingButton(APIView):
+    permission_classes = [IsAuthenticated]
+
+    # a patch request to check the toggel key value set by the user on the frontend
+    @swagger_auto_schema(
+        operation_summary="Toggle email setting",
+        operation_description="This endpoint allows a user to toggle their email notification settings.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "is_email_enabled": openapi.Schema(
+                    type=openapi.TYPE_BOOLEAN, description="Enable or disable email notifications"
+                ),
+            },
+            required=["is_email_enabled"],
+        ),
+        responses={
+            200: "Email notification settings updated successfully.",
+            400: "Invalid data.",
+        },
+    )
+    def patch(self, request, *args, **kwargs):
+        user = request.user
+        is_email_enabled = request.data.get("is_email_enabled")
+
+        if is_email_enabled is None:
+            return Response(
+                {"error": "is_email_enabled field is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.is_email_enabled = is_email_enabled
+        user.save()
+
+        return Response(
+            {"message": "Email notification settings updated successfully."},
+            status=status.HTTP_200_OK,
+        )
+    
+class PushNotificationSettingButton(APIView):
+    permission_classes = [IsAuthenticated]
+
+    # a patch request to check the toggel key value set by the user on the frontend
+    @swagger_auto_schema(
+        operation_summary="Toggle push notification setting",
+        operation_description="This endpoint allows a user to toggle their push notification settings.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "is_push_notification_enabled": openapi.Schema(
+                    type=openapi.TYPE_BOOLEAN, description="Enable or disable push notifications"
+                ),
+            },
+            required=["is_push_notification_enabled"],
+        ),
+        responses={
+            200: "Push notification settings updated successfully.",
+            400: "Invalid data.",
+        },
+    )
+    def patch(self, request, *args, **kwargs):
+        user = request.user
+        is_push_notification_enabled = request.data.get("is_push_notification_enabled")
+
+        if is_push_notification_enabled is None:
+            return Response(
+                {"error": "is_push_notification_enabled field is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.is_push_notification_enabled = is_push_notification_enabled
+        user.save()
+
+        return Response(
+            {"message": "Push notification settings updated successfully."},
+            status=status.HTTP_200_OK,
+        )

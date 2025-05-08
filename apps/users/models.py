@@ -76,6 +76,8 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     nin = models.CharField(max_length=11, validators=[MinLengthValidator(11)], blank=False, null=True)
     role = models.CharField(max_length=10, blank=False, choices=ROLE_CHOICES)
     is_verified = models.BooleanField(default=False)
+    is_email_enabled = models.BooleanField(default=False)
+    is_push_notification_enabled = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True, null=True)
     otp_expiration = models.DateTimeField(blank=True, null=True)
 

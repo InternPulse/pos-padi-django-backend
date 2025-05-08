@@ -25,6 +25,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "role",
             "photo",
             "password",
+            "is_email_enabled",
+            "is_push_notification_enabled"
         ]
         extra_kwargs = {
             "photo": {"required": False},

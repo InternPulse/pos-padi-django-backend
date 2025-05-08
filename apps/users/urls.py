@@ -8,7 +8,7 @@ from .views import (
     UserSummaryView,
     ChangePasswordAPIView
 )
-from .views import LogoutAPIView, ForgotPasswordAPIView, ResetPasswordAPIView, RefreshTokenAPIView
+from .views import LogoutAPIView, ForgotPasswordAPIView, ResetPasswordAPIView, RefreshTokenAPIView, PushNotificationSettingButton,EmailToggleSettingButton
 
 urlpatterns = [
     path("register/", RegistrationAPIView.as_view(), name="register"),
@@ -21,4 +21,6 @@ urlpatterns = [
     path("refresh-token/", RefreshTokenAPIView.as_view(), name="refresh-token"),
     path("summary/", UserSummaryView.as_view(), name="user-summary"),
     path("change-password/", ChangePasswordAPIView.as_view(), name="change-password"),
+    path("push-notification-setting/", PushNotificationSettingButton.as_view(), name="push-notification-setting"),
+    path("email-toggle-setting/", EmailToggleSettingButton.as_view(), name="email-toggle-setting"),
 ]
