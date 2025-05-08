@@ -58,8 +58,10 @@ class CompanyEndpointsTestCase(APITestCase):
             "name": "New Company",
             "state": "New State",
             "lga": "New LGA",
-            "area": "New Area"
+            "area": "New Area",
+            "address": "123 Test Address"
         }
+
         response = self.client.post(self.company_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["name"], data["name"])
