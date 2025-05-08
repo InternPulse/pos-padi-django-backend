@@ -10,7 +10,7 @@ class TransactionSerializer(serializers.ModelSerializer):
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-    user_id = serializers.UUIDField()
+    # user_id = serializers.UUIDField()
 
     class Meta:
         model = Notification
