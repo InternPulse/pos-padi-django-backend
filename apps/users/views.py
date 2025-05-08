@@ -593,7 +593,7 @@ class EmailToggleSettingButton(APIView):
         user.save()
 
         return Response(
-            {"message": "Push notification settings updated successfully."},
+            {"message": "email toggle settings updated successfully."},
             status=status.HTTP_200_OK,
         )
     
