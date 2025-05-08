@@ -460,7 +460,8 @@ class UserSummaryView(APIView):
             agents = AgentSerializer(
                 Agent.objects.filter(company__owner=user), many=True
             ).data
-            agent_ids = [agent["user_id"] for agent in agents]
+            agent_ids = [agent["user_id"]["id"] for agent in agents]
+            print(agent_ids)
             transactions = Transaction.objects.filter(agent_id__in=agent_ids)
             transactions_data = TransactionSerializer(transactions, many=True).data
             notifications_data = NotificationSerializer(
@@ -482,7 +483,6 @@ class UserSummaryView(APIView):
 
         elif user.role == "agent":
             user_data = AgentSerializer(user.agent).data
-            agent_id = user.agent.agent_id
             transactions = Transaction.objects.filter(agent_id=user.id)
             company_data = CompanySerializer(user.agent.company).data
             transactions_data = TransactionSerializer(transactions, many=True).data
