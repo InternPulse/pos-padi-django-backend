@@ -54,9 +54,10 @@ class CustomerEndpointsTestCase(APITestCase):
 
         # Create a test customer
         cls.test_customer = Customer.objects.create(
-            user=cls.test_user,
+            created_by=cls.test_agent_profile,  # Use the correct field
             first_name="Test",
             last_name="Customer",
+            phone="1234567890",
             tag="regular"
         )
 
