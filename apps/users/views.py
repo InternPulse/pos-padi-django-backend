@@ -13,6 +13,7 @@ from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework.generics import UpdateAPIView
 from .models import User
 from .serializers import RegistrationSerializer, LoginSerializer
 from ..customers.serializers import CustomerSerializer, Customer
@@ -618,3 +619,74 @@ class PushNotificationSettingButton(APIView):
             {"message": "Push notification settings updated successfully."},
             status=status.HTTP_200_OK,
         )
+
+
+class UserProfileUpdate(UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RegistrationSerializer
+    queryset = User.objects.none()
+    http_method_names = ["patch"]
+
+    def get_object(self):
+        try:
+            return User.objects.get(id=self.request.user.id)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    def get_queryset(self):
+        return User.objects.filter(id=self.request.user.id)
+    
+    @swagger_auto_schema(
+        operation_summary="Update user profile",
+        operation_description="This endpoint allows a user to update their profile information.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "first_name": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="User's first name"
+                ),
+                "last_name": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="User's last name"
+                ),
+                "phone": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="User's phone number"
+                ),
+                "photo": openapi.Schema(
+                    type=openapi.TYPE_FILE, description="User's profile photo"
+                ),
+            },
+        ),
+        responses={
+            200: "Profile updated successfully.",
+            400: "Invalid data.",
+        },
+    )
+
+    def patch(self, request, *args, **kwargs):
+        """Update user first_name, last_name, phone, and photo"""
+
+        user = self.get_object()
+        editable_fields = [
+            "first_name",
+            "last_name",
+            "phone",
+            "photo",
+        ]
+        data = request.data.copy()
+
+        for field in data.keys():
+            if field not in editable_fields:
+                raise ValueError(f"{field} is not an editable field.")
+        
+        
+        serializer = self.get_serializer(user, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+    
+        return Response(
+            {"message": "Profile updated successfully."},
+            status=status.HTTP_200_OK,
+        )
+        

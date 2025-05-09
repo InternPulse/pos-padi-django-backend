@@ -6,9 +6,15 @@ from .views import (
     VerifyEmailAPIView,
     GenerateNewOTPView,
     UserSummaryView,
-    ChangePasswordAPIView
+    ChangePasswordAPIView,
+    LogoutAPIView,
+    ForgotPasswordAPIView,
+    ResetPasswordAPIView,
+    RefreshTokenAPIView,
+    PushNotificationSettingButton,
+    EmailToggleSettingButton,
+    UserProfileUpdate,
 )
-from .views import LogoutAPIView, ForgotPasswordAPIView, ResetPasswordAPIView, RefreshTokenAPIView, PushNotificationSettingButton,EmailToggleSettingButton
 
 urlpatterns = [
     path("register/", RegistrationAPIView.as_view(), name="register"),
@@ -21,6 +27,15 @@ urlpatterns = [
     path("refresh-token/", RefreshTokenAPIView.as_view(), name="refresh-token"),
     path("summary/", UserSummaryView.as_view(), name="user-summary"),
     path("change-password/", ChangePasswordAPIView.as_view(), name="change-password"),
-    path("push-notification-setting/", PushNotificationSettingButton.as_view(), name="push-notification-setting"),
-    path("email-toggle-setting/", EmailToggleSettingButton.as_view(), name="email-toggle-setting"),
+    path(
+        "push-notification-setting/",
+        PushNotificationSettingButton.as_view(),
+        name="push-notification-setting",
+    ),
+    path(
+        "email-toggle-setting/",
+        EmailToggleSettingButton.as_view(),
+        name="email-toggle-setting",
+    ),
+    path("update-profile/", UserProfileUpdate.as_view(), name="update-profile"),
 ]
