@@ -1,3 +1,5 @@
+![image](https://github.com/user-attachments/assets/3ec0f633-1414-4086-a8f4-42649e27003f)
+---
 # POS Padi Django Backend API
 
 ## Project Overview
