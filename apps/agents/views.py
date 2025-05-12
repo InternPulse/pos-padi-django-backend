@@ -208,7 +208,14 @@ class AgentRetrieveUpdateView(RetrieveUpdateAPIView):
         },
     )
     def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+        user_id = kwargs.get("pk")
+        agent = Agent.objects.filter(user_id=user_id).first()
+        if not agent:
+            return Response(
+                {"error": "Agent not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = self.get_serializer(agent)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     def patch(self, request, *args, **kwargs):
         """

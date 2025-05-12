@@ -105,6 +105,9 @@ class LoginAPIView(APIView):
 
         if user.role == "agent":
             access["agent_id"] = user.agent.agent_id
+            access["company_id"] = user.agent.company.id
+            print(user.agent.company.id)
+
         elif user.role == "customer":
             access["customer_id"] = user.customer.customer_id
 
@@ -458,11 +461,9 @@ class UserSummaryView(APIView):
         if user.role == "owner":
             user_data = RegistrationSerializer(user).data
             company_data = CompanySerializer(Company.objects.filter(owner=user), many=True).data
-            agents = AgentSerializer(
-                Agent.objects.filter(company__owner=user), many=True
-            ).data
-            agent_ids = [agent["user_id"]["id"] for agent in agents]
-            print(agent_ids)
+            agents = Agent.objects.filter(company__owner=user)
+            agents_data = AgentSerializer(agents, many=True).data
+            agent_ids = agents.values_list("user_id__id", flat=True)
             transactions = Transaction.objects.filter(agent_id__in=agent_ids)
             transactions_data = TransactionSerializer(transactions, many=True).data
             notifications_data = NotificationSerializer(
@@ -476,7 +477,7 @@ class UserSummaryView(APIView):
             data = {
                 "user": user_data,
                 "company": company_data,
-                "agents": agents,
+                "agents": agents_data,
                 "transactions": transactions_data,
                 "customers": customers_data,
                 "notifications": notifications_data
