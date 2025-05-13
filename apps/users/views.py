@@ -6,6 +6,7 @@ from drf_yasg import openapi
 from django.core.mail import send_mail, BadHeaderError
 from django.utils.timezone import now
 from django.conf import settings
+from django.db import transaction
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -49,6 +50,7 @@ class RegistrationAPIView(APIView):
             500: "Email sending failed.",
         },
     )
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
