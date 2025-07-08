@@ -17,7 +17,7 @@ POS-Padi is a robust API to help POS agents and business owners efficiently mana
 
 ## Live Link
 
-[API Live Demo](https://pos-padi-django-backend.onrender.com/)
+[Live Project](https://pospadi.com.ng/home)
 
 ## Documentation Link
 
