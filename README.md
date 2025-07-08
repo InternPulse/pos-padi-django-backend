@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/3ec0f633-1414-4086-a8f4-42649e27003f)
+![project preview](https://github.com/user-attachments/assets/3ec0f633-1414-4086-a8f4-42649e27003f)
 ---
 # POS Padi Django Backend API
 
@@ -17,11 +17,11 @@ POS-Padi is a robust API to help POS agents and business owners efficiently mana
 
 ## Live Link
 
-[Live Project](https://pospadi.com.ng/home)
+Live Project [Here](https://pospadi.com.ng/home)
 
 ## Documentation Link
 
-Postman API Documentation [here](https://documenter.getpostman.com/view/43614350/2sB2ixjZkQ).
+Postman API Documentation [Here](https://documenter.getpostman.com/view/43614350/2sB2ixjZkQ).
 
 ---
 
